@@ -1,0 +1,45 @@
+html {
+    height: 100%;
+}
+
+body {
+    background-image: linear-gradient(to top, black, darkblue 99%);
+    background-repeat: no-repeat;
+    background-size: auto;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.game-control {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    width: 150px;
+}
+
+div.game-controls {
+    position: relative;
+}
+
+div.game-stats {
+    color: white;
+}
+
+div.title {
+    color: white;
+}
+
+div.center {
+    margin: auto;
+    width: 50%;
+}
+
+canvas {
+    background-color: rgba(0, 0, 0, 0.1);
+}

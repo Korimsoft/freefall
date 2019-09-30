@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="./src/renderer.js" type="module"></script>
+    <script src="./src/ball.js" type="module"></script>
+    <script src="./src/game.js" type="module"></script>
+    <link rel="stylesheet" type="text/css" href="./resources/styles/style.css">
+    <title>Freefall</title>
+</head>
+
+<body>
+    <div class="center">
+        <div class="title">Freefall</div>
+        <divi class="game">
+            <div id="game-stats" class="game-stats">
+                <span id="score" class="left">
+                    Score: <span id="score-counter">0</span>
+                </span>
+                <span id="lives" class="right">
+                    <span id="lives-counter">
+                    </span>
+                </span>
+            </div>
+            <canvas id="canvas" tabindex="0">
+
+            </canvas>
+    </div>
+    <div class="game-controls" id="game-controls">
+        <button id="start" class="game-control">Start</button>
+        <button id="about" class="game-control">About</button>
+    </div>
+
+    </div>
+</body>
+
+</html>
