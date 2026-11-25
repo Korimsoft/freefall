@@ -4,7 +4,8 @@
   "description": "A game",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
+    "build": "node scripts/build.js",
+    "start": "pnpm build && node .",
     "test": "jest",
     "typecheck": "tsc"
   },

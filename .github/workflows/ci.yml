@@ -2,7 +2,7 @@ name: CI
 
 # Runs when a pull request into main is opened or reopened, and on every push to a
 # branch that has an open pull request (pull_request covers all three by default).
-# Lint, type check and tests run only if package.json has a script for them.
+# Lint, type check, tests and build run only if package.json has a script for them.
 
 on:
   pull_request:
@@ -32,3 +32,4 @@ jobs:
       - run: pnpm run --if-present lint
       - run: pnpm run --if-present typecheck
       - run: pnpm run --if-present test
+      - run: pnpm run --if-present build
