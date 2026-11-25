@@ -1,5 +1,6 @@
 # Gives every push to main (one per merged pull request) the next whole-number
-# version by pushing the tag v<n>, where n is one more than the highest v<n> tag.
+# version by pushing the tag v<n>, where n is one more than the highest v<n> tag,
+# and makes a GitHub release v<n> with the built game (dist/) as freefall-v<n>.zip.
 # Nothing is committed: direct pushes to main are forbidden, so the version lives
 # only in the tags. A rule set that protects main does not stop the tag push.
 name: Release
@@ -25,13 +26,29 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up pnpm (version from packageManager in package.json)
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js 26.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26.x
+          cache: pnpm
+
+      # Build before tagging, so a commit whose build fails gets no version.
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
       - name: Tag the next version
+        id: tag
         run: |
           set -euo pipefail
-          # A rerun of a commit that is already tagged releases nothing new.
+          # A rerun of a commit that is already tagged reuses its tag, so a
+          # release that failed after the tag push can be finished.
           existing=$(git tag --points-at HEAD | grep -E '^v[0-9]+$' | sort -V | tail -n 1 || true)
           if [ -n "$existing" ]; then
             echo "Commit is already tagged $existing"
+            echo "version=$existing" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           latest=$(git tag --list | grep -E '^v[0-9]+$' | sort -V | tail -n 1 || true)
@@ -39,4 +56,19 @@ jobs:
           next=$(( ${current:-0} + 1 ))
           git tag "v$next"
           git push origin "v$next"
-          echo "Released v$next"
+          echo "version=v$next" >> "$GITHUB_OUTPUT"
+          echo "Tagged v$next"
+
+      - name: Make the GitHub release with the build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.tag.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$VERSION" > /dev/null 2>&1; then
+            echo "Release $VERSION already exists"
+            exit 0
+          fi
+          (cd dist && zip -r "../freefall-$VERSION.zip" .)
+          gh release create "$VERSION" "freefall-$VERSION.zip" --title "$VERSION" --generate-notes --verify-tag
+          echo "Released $VERSION"
