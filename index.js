@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-'use strict';
+import express from 'express';
 
-const express = require('express');
 const app = express();
 
 // dist/ is made by `pnpm build`: app/ without the tests.

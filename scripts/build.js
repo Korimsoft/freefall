@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 
-'use strict';
+// Builds what players get: app/ without its TypeScript, then app/src compiled
+// to JavaScript by tsconfig.build.json, which leaves out the tests and their helpers.
 
-// Builds what players get: app/ without the tests and their helpers.
-// The TypeScript migration replaces the copy of src/ with a compile step.
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const fs = require('fs');
-const path = require('path');
-
-const root = path.join(__dirname, '..');
+const root = path.join(import.meta.dirname, '..');
 const source = path.join(root, 'app');
 const target = path.join(root, 'dist');
+const tsc = fileURLToPath(import.meta.resolve('typescript/bin/tsc'));
 
-const isTestFile = (file) => /\.test\.ts$/.test(file) || path.basename(file) === 'fixtures.ts';
+const isTypeScript = (file) => file.endsWith('.ts');
 
 fs.rmSync(target, { recursive: true, force: true });
-fs.cpSync(source, target, { recursive: true, filter: (file) => !isTestFile(file) });
+fs.cpSync(source, target, { recursive: true, filter: (file) => !isTypeScript(file) });
+execFileSync(process.execPath, [tsc, '-p', path.join(root, 'tsconfig.build.json')], { stdio: 'inherit' });
 
 console.log(`Built ${path.relative(root, target)}/`);
