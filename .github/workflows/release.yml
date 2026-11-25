@@ -1,0 +1,45 @@
+# Gives every push to main (one per merged pull request) the next whole-number
+# version: raises "version" in package.json by one, commits it as
+# "Release <n>" and tags that commit v<n>.
+# The commit is pushed with GITHUB_TOKEN, which does not start this workflow again.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+# Run one release at a time, in order, so two quick merges get two numbers.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the latest main, not the pushed commit, so a queued run
+      # builds on the release commit of the run before it.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Bump version, commit and tag
+        run: |
+          set -euo pipefail
+          file=package.json
+          current=$(jq -r '.version' "$file")
+          if ! [[ "$current" =~ ^[0-9]+$ ]]; then
+            echo "::error file=$file::version \"$current\" is not a whole number"
+            exit 1
+          fi
+          next=$((current + 1))
+          jq --arg v "$next" '.version = $v' "$file" > "$file.tmp"
+          mv "$file.tmp" "$file"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release $next"
+          git tag "v$next"
+          git push origin HEAD:main "v$next"
