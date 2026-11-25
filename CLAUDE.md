@@ -7,7 +7,9 @@ A casual arcade game: static files in `app/`, served by a small Express server (
 - Package manager: pnpm (version in `packageManager` in package.json). Never use npm or yarn, and never commit a `package-lock.json`.
 - Install: `pnpm install`
 - Run: `pnpm start`, then open http://localhost:8080
-- There are no tests and no build step yet.
+- Test: `pnpm test` (Jest with ts-jest, jsdom); type check: `pnpm typecheck`. There is no build step yet.
+- Tests are TypeScript files next to the code they test in `app/src` (e.g. `ball.test.ts`), with shared test helpers in `app/src/fixtures.ts`. `index.js` keeps them from being served.
+- TypeScript stays on 6.x: ts-jest does not support TypeScript 7 yet.
 
 ## Releases
 
