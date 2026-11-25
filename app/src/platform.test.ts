@@ -1,23 +1,19 @@
-import { Ball } from './ball.js';
-import { PLATFORM_HEIGHT, PLATFORM_SPEED, PLATFORM_WIDTH, PlatformGenerator } from './platform.js';
+import { PlatformGenerator } from './platform.js';
 import { Renderer } from './renderer.js';
 import {
-    BOARD_HEIGHT,
+    givenABall,
     givenACanvasDrawingInto,
     givenAFakeContext,
     givenAPlatform,
-    givenBoardDimensions,
+    givenRandomNumbers,
     Platform,
+    Size,
 } from './fixtures';
 
-const RADIUS = 10;
+const BOARD_300_BY_500 = { width: 300, height: 500 };
 
-function givenABall(x: number, y: number): Ball {
-    return new Ball(x, y, RADIUS, givenBoardDimensions());
-}
-
-function givenAGenerator(): { generator: PlatformGenerator, generated: jest.Mock } {
-    const generator = new PlatformGenerator(givenBoardDimensions());
+function givenAGenerator(board: Size): { generator: PlatformGenerator, generated: jest.Mock } {
+    const generator = new PlatformGenerator(board);
     const generated = jest.fn();
     generator.platformGenerated = generated;
     return { generator, generated };
@@ -31,34 +27,28 @@ afterEach(() => {
     jest.restoreAllMocks();
 });
 
-describe('platform constants', () => {
-    it('makes platforms 100 × 10 px that rise 3 px per move', () => {
-        expect(PLATFORM_WIDTH).toBe(100);
-        expect(PLATFORM_HEIGHT).toBe(10);
-        expect(PLATFORM_SPEED).toBe(-3);
-    });
-});
-
 describe('PlatformGenerator', () => {
     it('makes no platform when the chance roll is 0.5 or more', () => {
-        jest.spyOn(Math, 'random').mockReturnValue(0.5);
-        const { generator, generated } = givenAGenerator();
+        givenRandomNumbers(0.5);
+        const { generator, generated } = givenAGenerator(BOARD_300_BY_500);
 
         generator.randomPlatform();
 
         expect(generated).not.toHaveBeenCalled();
     });
 
-    it('makes a rising platform at the bottom, at a random place across the board', () => {
-        jest.spyOn(Math, 'random').mockReturnValueOnce(0.49).mockReturnValueOnce(0.25);
-        const { generator, generated } = givenAGenerator();
+    it('makes a 100 × 10 px platform rising 3 px per move at the bottom, at a random place across the board', () => {
+        // chance roll 0.49 (< 0.5), then place roll 0.25
+        givenRandomNumbers(0.49, 0.25);
+        const { generator, generated } = givenAGenerator(BOARD_300_BY_500);
 
         generator.randomPlatform();
 
         expect(generated).toHaveBeenCalledTimes(1);
         expect(generatedPlatform(generated)).toMatchObject({
-            x: 50,
-            y: BOARD_HEIGHT,
+            // 0.25 of the room left beside a 100 px platform on a 300 px board
+            x: 0.25 * (300 - 100),
+            y: 500,
             width: 100,
             height: 10,
             speed: -3,
@@ -66,11 +56,12 @@ describe('PlatformGenerator', () => {
     });
 
     it('makes the next platform only once the last one has risen more than 30 px', () => {
-        jest.spyOn(Math, 'random').mockReturnValue(0);
-        const { generator, generated } = givenAGenerator();
+        givenRandomNumbers(0);
+        const { generator, generated } = givenAGenerator(BOARD_300_BY_500);
         generator.randomPlatform();
         const first = generatedPlatform(generated);
 
+        // 10 moves of 3 px: exactly 30 px
         for (let move = 0; move < 10; move++) {
             first.move();
         }
@@ -110,9 +101,7 @@ describe('Platform', () => {
         expect(platform.overTop).not.toHaveBeenCalled();
     });
 
-    describe('ball on top', () => {
-        const platform = givenAPlatform({ x: 100, y: 100 });
-
+    describe('top, for a 100 × 10 px platform at (100, 100) and a ball of radius 10', () => {
         it.each([
             ['ball above the middle, touching it', 150, 95, true],
             ['ball bottom exactly on the platform', 150, 90, true],
@@ -121,27 +110,33 @@ describe('Platform', () => {
             ['ball centre below the platform top', 150, 101, false],
             ['ball centre on the left edge', 100, 95, false],
             ['ball centre on the right edge', 200, 95, false],
-        ])('%s → %s', (_case, x, y, hits) => {
-            expect(platform.ballHitsTop(givenABall(x, y))).toBe(hits);
+        ])('%s (x %d, y %d) → %s', (_case, x, y, hits) => {
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x, y, radius: 10, board: BOARD_300_BY_500 });
+
+            expect(platform.ballHitsTop(ball)).toBe(hits);
         });
     });
 
-    describe('ball on the left side', () => {
-        const platform = givenAPlatform({ x: 100, y: 100 });
-
+    describe('left side, for a 100 × 10 px platform at (100, 100) and a ball of radius 10', () => {
         it('is hit by a ball going right whose width covers the left edge', () => {
-            const ball = givenABall(95, 105);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 95, y: 105, radius: 10, board: BOARD_300_BY_500 });
             ball.goRight();
 
             expect(platform.ballHitsLeft(ball)).toBe(true);
         });
 
         it('is not hit by a ball that is not going right', () => {
-            expect(platform.ballHitsLeft(givenABall(95, 105))).toBe(false);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 95, y: 105, radius: 10, board: BOARD_300_BY_500 });
+
+            expect(platform.ballHitsLeft(ball)).toBe(false);
         });
 
         it('is not hit by a ball still left of the edge', () => {
-            const ball = givenABall(89, 105);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 89, y: 105, radius: 10, board: BOARD_300_BY_500 });
             ball.goRight();
 
             expect(platform.ballHitsLeft(ball)).toBe(false);
@@ -152,33 +147,35 @@ describe('Platform', () => {
             ['covering the bottom edge', 115, true],
             ['above the platform', 80, false],
             ['below the platform', 125, false],
-        ])('with the ball %s → %s', (_case, y, hits) => {
-            const ball = givenABall(95, y);
+        ])('with the ball %s (y %d) → %s', (_case, y, hits) => {
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 95, y, radius: 10, board: BOARD_300_BY_500 });
             ball.goRight();
 
             expect(platform.ballHitsLeft(ball)).toBe(hits);
         });
     });
 
-    describe('ball on the right side', () => {
-        const platform = givenAPlatform({ x: 100, y: 100 });
-
+    describe('right side, for a 100 × 10 px platform at (100, 100) and a ball of radius 10', () => {
         it('is hit by a ball going left whose width covers the right edge', () => {
-            const ball = givenABall(205, 105);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 205, y: 105, radius: 10, board: BOARD_300_BY_500 });
             ball.goLeft();
 
             expect(platform.ballHitsRight(ball)).toBe(true);
         });
 
         it('is not hit by a ball going right', () => {
-            const ball = givenABall(205, 105);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 205, y: 105, radius: 10, board: BOARD_300_BY_500 });
             ball.goRight();
 
             expect(platform.ballHitsRight(ball)).toBe(false);
         });
 
         it('is not hit by a ball above the platform', () => {
-            const ball = givenABall(205, 80);
+            const platform = givenAPlatform({ x: 100, y: 100, speed: 0 });
+            const ball = givenABall({ x: 205, y: 80, radius: 10, board: BOARD_300_BY_500 });
             ball.goLeft();
 
             expect(platform.ballHitsRight(ball)).toBe(false);
@@ -187,8 +184,9 @@ describe('Platform', () => {
 
     it('draws itself with the renderer', () => {
         const ctx = givenAFakeContext();
-        const platform = givenAPlatform({ x: 100, y: 200 });
-        const renderer = new Renderer(givenACanvasDrawingInto(ctx), { ball: givenABall(150, 30), platforms: [] });
+        const platform = givenAPlatform({ x: 100, y: 200, speed: 0 });
+        const ball = givenABall({ x: 150, y: 30, radius: 10, board: BOARD_300_BY_500 });
+        const renderer = new Renderer(givenACanvasDrawingInto(ctx, BOARD_300_BY_500), { ball, platforms: [] });
 
         platform.render(renderer);
 

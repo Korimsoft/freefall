@@ -1,6 +1,7 @@
+import { Ball } from './ball.js';
 import { PlatformGenerator } from './platform.js';
 
-export type BoardDimensions = {
+export type Size = {
     width: number,
     height: number,
 };
@@ -26,21 +27,19 @@ export type FakeContext = {
     gradient: FakeGradient,
 };
 
-export const BOARD_WIDTH = 300;
-export const BOARD_HEIGHT = 500;
-
-export function givenBoardDimensions(): BoardDimensions {
-    return { width: BOARD_WIDTH, height: BOARD_HEIGHT };
+export function givenABall(ball: { x: number, y: number, radius: number, board: Size }): Ball {
+    return new Ball(ball.x, ball.y, ball.radius, ball.board);
 }
 
-// The generator's initial platform is a real, motionless Platform, which avoids
-// going through Math.random just to get one.
-export function givenAPlatform(position: { x: number, y: number, speed?: number }): Platform {
-    const platform = new PlatformGenerator(givenBoardDimensions()).lastPlatform;
-    platform.x = position.x;
-    platform.y = position.y;
-    platform.speed = position.speed ?? 0;
-    return platform;
+// Platform is not exported yet, so this takes the motionless placeholder platform
+// that a new generator holds. The TypeScript migration exports Platform and
+// replaces this with `new Platform(x, y, speed)`.
+export function givenAPlatform(platform: { x: number, y: number, speed: number }): Platform {
+    const placeholder = new PlatformGenerator({ width: 0, height: 0 }).lastPlatform;
+    placeholder.x = platform.x;
+    placeholder.y = platform.y;
+    placeholder.speed = platform.speed;
+    return placeholder;
 }
 
 export function givenAFakeContext(): FakeContext {
@@ -61,13 +60,26 @@ export function givenAFakeContext(): FakeContext {
     };
 }
 
-// jsdom has neither layout nor a 2D context, so the canvas gets the board's size
-// and a context that records the drawing calls.
-export function givenACanvasDrawingInto(ctx: FakeContext, canvas = document.createElement('canvas')): HTMLCanvasElement {
-    Object.defineProperty(canvas, 'offsetWidth', { value: BOARD_WIDTH });
-    Object.defineProperty(canvas, 'offsetHeight', { value: BOARD_HEIGHT });
+// jsdom has neither layout nor a 2D context, so the canvas gets the size a browser
+// would lay it out at and a context that records the drawing calls.
+export function givenACanvasDrawingInto(
+    ctx: FakeContext,
+    layoutSize: Size,
+    canvas: HTMLCanvasElement = document.createElement('canvas'),
+): HTMLCanvasElement {
+    Object.defineProperty(canvas, 'offsetWidth', { value: layoutSize.width });
+    Object.defineProperty(canvas, 'offsetHeight', { value: layoutSize.height });
     jest.spyOn(canvas, 'getContext').mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
     return canvas;
+}
+
+// Math.random gives these numbers in order and then keeps giving the last one.
+export function givenRandomNumbers(...numbers: number[]): void {
+    const random = jest.spyOn(Math, 'random');
+    for (const number of numbers) {
+        random.mockReturnValueOnce(number);
+    }
+    random.mockReturnValue(numbers[numbers.length - 1]);
 }
 
 export function givenGameMarkup(): string {

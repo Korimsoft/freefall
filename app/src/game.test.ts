@@ -1,12 +1,34 @@
-import { FakeContext, givenACanvasDrawingInto, givenAFakeContext, givenGameMarkup } from './fixtures';
+import {
+    FakeContext,
+    givenACanvasDrawingInto,
+    givenAFakeContext,
+    givenGameMarkup,
+    givenRandomNumbers,
+    Size,
+} from './fixtures';
 
 const KEY_LEFT = 37;
+const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const GAME_TICK_MS = 20;
+const PLATFORM_TICK_MS = 200;
 // Game ticks (20 ms) and animation frames (16 ms) line up again every 80 ms,
 // so between two frames 80 ms apart exactly 4 game ticks have run.
 const FOUR_TICKS_BETWEEN_FRAMES_MS = 80;
-const ONE_FALL_TO_THE_BOTTOM_MS = 96 * GAME_TICK_MS;
+// The game sets its canvas to 300 × 500 px; a browser lays it out at that size.
+const CANVAS_300_BY_500 = { width: 300, height: 500 };
+// The first random number of each platform tick is the chance roll: 0.99 is
+// never below 0.5, so no platform ever appears.
+const NO_PLATFORMS = [0.99];
+// The game puts the ball, radius 10, at the middle of the board (300 / 2) and
+// three radii down, so it starts at (150, 30) and touches the bottom of the
+// 500 px board below y = 490. From rest it falls 0.1·n(n+1)/2 px in n ticks:
+// 456 px after 95 ticks (y = 486), 465.6 px after 96 (past 490).
+const TICKS_TO_FALL_TO_THE_BOTTOM = 96;
+const ONE_FALL_TO_THE_BOTTOM_MS = TICKS_TO_FALL_TO_THE_BOTTOM * GAME_TICK_MS;
+// A platform is made at y = 500 and rises 3 px per tick: after 167 ticks it is
+// at 500 − 3 · 167 = −1, over the top.
+const TICKS_FOR_A_PLATFORM_TO_RISE_OVER_THE_TOP = 167;
 
 type GamePage = {
     ctx: FakeContext,
@@ -27,10 +49,11 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
 
 // game.js sets itself up on the page as soon as it is imported, so every test
 // imports a fresh copy into a fresh page.
-async function givenTheGamePage(): Promise<GamePage> {
+async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: number[] }): Promise<GamePage> {
+    givenRandomNumbers(...page.randomNumbers);
     document.body.innerHTML = givenGameMarkup();
     const ctx = givenAFakeContext();
-    const canvas = givenACanvasDrawingInto(ctx, elementById('canvas', HTMLCanvasElement));
+    const canvas = givenACanvasDrawingInto(ctx, page.canvasLayout, elementById('canvas', HTMLCanvasElement));
     await jest.isolateModulesAsync(async () => {
         await import('./game.js');
     });
@@ -60,7 +83,6 @@ beforeEach(() => {
     jest.useFakeTimers();
     jest.spyOn(window, 'alert').mockImplementation(() => {});
     jest.spyOn(console, 'debug').mockImplementation(() => {});
-    jest.spyOn(Math, 'random').mockReturnValue(0.99);
 });
 
 afterEach(() => {
@@ -71,14 +93,14 @@ afterEach(() => {
 
 describe('game page before the start', () => {
     it('sizes the canvas to 300 × 500 px', async () => {
-        const { canvas } = await givenTheGamePage();
+        const { canvas } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
         expect(canvas.getAttribute('width')).toBe('300px');
         expect(canvas.getAttribute('height')).toBe('500px');
     });
 
     it('draws nothing and runs no game', async () => {
-        const { ctx, score } = await givenTheGamePage();
+        const { ctx, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
         jest.advanceTimersByTime(1000);
 
@@ -89,7 +111,7 @@ describe('game page before the start', () => {
 
 describe('starting a game', () => {
     it('disables Start, focuses the canvas and shows 3 lives and a score of 0', async () => {
-        const { startButton, canvas, lives, score } = await givenTheGamePage();
+        const { startButton, canvas, lives, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
         startButton.click();
 
@@ -100,7 +122,7 @@ describe('starting a game', () => {
     });
 
     it('draws the ball at the top middle of the board', async () => {
-        const { startButton, drawnBall } = await givenTheGamePage();
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
         startButton.click();
 
@@ -110,7 +132,7 @@ describe('starting a game', () => {
 
 describe('a running game', () => {
     it('lets the ball fall and scores the whole pixels it has fallen', async () => {
-        const { startButton, score } = await givenTheGamePage();
+        const { startButton, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
 
         jest.advanceTimersByTime(10 * GAME_TICK_MS);
@@ -120,7 +142,7 @@ describe('a running game', () => {
     });
 
     it('moves the ball 5 px right per tick while the right arrow is held', async () => {
-        const { startButton, drawnBall } = await givenTheGamePage();
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
         press(KEY_RIGHT);
         jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
@@ -132,7 +154,7 @@ describe('a running game', () => {
     });
 
     it('moves the ball 5 px left per tick while the left arrow is held', async () => {
-        const { startButton, drawnBall } = await givenTheGamePage();
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
         press(KEY_LEFT);
         jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
@@ -144,7 +166,7 @@ describe('a running game', () => {
     });
 
     it('stops the ball sideways when the key is released', async () => {
-        const { startButton, drawnBall } = await givenTheGamePage();
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
         press(KEY_RIGHT);
         jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
@@ -156,18 +178,18 @@ describe('a running game', () => {
         expect(drawnBall().x).toBe(before);
     });
 
-    it('ignores other keys', async () => {
-        const { startButton, drawnBall } = await givenTheGamePage();
+    it('ignores other keys, leaving the ball in the middle of the board', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
 
-        press(38);
+        press(KEY_UP);
         jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
 
         expect(drawnBall().x).toBe(150);
     });
 
     it('costs a life when the ball reaches the bottom and puts the ball back at the top', async () => {
-        const { startButton, lives, drawnBall } = await givenTheGamePage();
+        const { startButton, lives, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
 
         jest.advanceTimersByTime(ONE_FALL_TO_THE_BOTTOM_MS - GAME_TICK_MS);
@@ -180,21 +202,23 @@ describe('a running game', () => {
     });
 
     it('keeps the score while the ball is put back at the top', async () => {
-        const { startButton, score } = await givenTheGamePage();
+        const { startButton, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         startButton.click();
 
         jest.advanceTimersByTime(ONE_FALL_TO_THE_BOTTOM_MS - GAME_TICK_MS);
         const scoreBeforeLifeLost = score();
         jest.advanceTimersByTime(GAME_TICK_MS);
 
-        expect(Number(scoreBeforeLifeLost)).toBeGreaterThan(450);
+        // 456 px fallen in 95 ticks; adding up 0.1 steps may land just below 456
+        expect(Number(scoreBeforeLifeLost)).toBeGreaterThanOrEqual(455);
+        expect(Number(scoreBeforeLifeLost)).toBeLessThanOrEqual(456);
         expect(score()).toBe(scoreBeforeLifeLost);
     });
 });
 
 describe('game over', () => {
     async function givenAGameAfterThreeFalls(): Promise<GamePage> {
-        const page = await givenTheGamePage();
+        const page = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
         page.startButton.click();
         jest.advanceTimersByTime(3 * ONE_FALL_TO_THE_BOTTOM_MS);
         return page;
@@ -237,21 +261,19 @@ describe('game over', () => {
 });
 
 describe('platforms in a running game', () => {
-    function givenOnePlatformAt(randomX: number): void {
-        jest.mocked(Math.random)
-            .mockReturnValueOnce(0)
-            .mockReturnValueOnce(randomX)
-            .mockReturnValue(0.99);
-    }
+    // The first platform tick rolls 0 (below 0.5: make a platform), then a place
+    // roll r puts it at x = r · (300 − 100); every later chance roll is 0.99.
+    const ONE_PLATFORM_AT_X_50 = [0, 0.25, 0.99];
+    const ONE_PLATFORM_AT_X_100_UNDER_THE_BALL = [0, 0.5, 0.99];
 
     it('appears at the bottom on a platform tick (every 200 ms) and is drawn', async () => {
-        givenOnePlatformAt(0.25);
-        const { startButton, ctx } = await givenTheGamePage();
+        const { startButton, ctx } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: ONE_PLATFORM_AT_X_50 });
         startButton.click();
 
-        jest.advanceTimersByTime(190);
+        jest.advanceTimersByTime(PLATFORM_TICK_MS - 10);
         expect(ctx.rect).not.toHaveBeenCalled();
 
+        // to the first animation frame after the platform tick, at 208 ms
         jest.advanceTimersByTime(18);
         const [x, y, width, height] = ctx.rect.mock.lastCall ?? [];
         expect({ x, width, height }).toEqual({ x: 50, width: 100, height: 10 });
@@ -261,8 +283,7 @@ describe('platforms in a running game', () => {
     });
 
     it('rises 3 px per game tick', async () => {
-        givenOnePlatformAt(0.25);
-        const { startButton, ctx } = await givenTheGamePage();
+        const { startButton, ctx } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: ONE_PLATFORM_AT_X_50 });
         startButton.click();
         jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS * 3);
         const before = ctx.rect.mock.lastCall?.[1];
@@ -273,11 +294,9 @@ describe('platforms in a running game', () => {
     });
 
     it('is gone once it has risen over the top', async () => {
-        givenOnePlatformAt(0.25);
-        const { startButton, ctx } = await givenTheGamePage();
+        const { startButton, ctx } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: ONE_PLATFORM_AT_X_50 });
         startButton.click();
-        // made at 200 ms at 500 px, over the top after 167 more ticks
-        jest.advanceTimersByTime(200 + 167 * GAME_TICK_MS);
+        jest.advanceTimersByTime(PLATFORM_TICK_MS + TICKS_FOR_A_PLATFORM_TO_RISE_OVER_THE_TOP * GAME_TICK_MS);
 
         ctx.rect.mockClear();
         jest.advanceTimersToNextFrame();
@@ -286,12 +305,15 @@ describe('platforms in a running game', () => {
     });
 
     it('catches the falling ball, which then stops scoring', async () => {
-        givenOnePlatformAt(0.5);
-        const { startButton, lives, score } = await givenTheGamePage();
+        const { startButton, lives, score } = await givenTheGamePage({
+            canvasLayout: CANVAS_300_BY_500,
+            randomNumbers: ONE_PLATFORM_AT_X_100_UNDER_THE_BALL,
+        });
         startButton.click();
         jest.advanceTimersByTime(ONE_FALL_TO_THE_BOTTOM_MS);
         const scoreOnThePlatform = score();
 
+        // without the platform, the ball would have hit the bottom by now
         jest.advanceTimersByTime(500);
 
         expect(lives()).toBe('3');
@@ -299,12 +321,19 @@ describe('platforms in a running game', () => {
     });
 
     it('carries the ball up over the top, which costs a life', async () => {
-        givenOnePlatformAt(0.5);
-        const { startButton, lives } = await givenTheGamePage();
+        const { startButton, lives } = await givenTheGamePage({
+            canvasLayout: CANVAS_300_BY_500,
+            randomNumbers: ONE_PLATFORM_AT_X_100_UNDER_THE_BALL,
+        });
         startButton.click();
 
-        jest.advanceTimersByTime(200 + 167 * GAME_TICK_MS);
+        // caught: no life lost by the time the ball would have hit the bottom
+        jest.advanceTimersByTime(ONE_FALL_TO_THE_BOTTOM_MS);
+        expect(lives()).toBe('3');
 
+        jest.advanceTimersByTime(
+            PLATFORM_TICK_MS + TICKS_FOR_A_PLATFORM_TO_RISE_OVER_THE_TOP * GAME_TICK_MS - ONE_FALL_TO_THE_BOTTOM_MS,
+        );
         expect(lives()).toBe('2');
     });
 });
