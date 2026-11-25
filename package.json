@@ -1,10 +1,9 @@
 {
   "name": "freefall",
-  "version": "1.0.0",
+  "version": "1",
   "description": "A game",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ."
   },
   "author": "Korimsoft",
@@ -14,5 +13,6 @@
   },
   "dependencies": {
     "express": "^4.22.3"
-  }
+  },
+  "packageManager": "pnpm@12.23.0"
 }
