@@ -10,9 +10,9 @@
   "author": "Korimsoft",
   "license": "GPL-2.0",
   "devDependencies": {
-    "eslint": "^6.4.0"
+    "eslint": "^10.15.0"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.22.3"
   }
 }
