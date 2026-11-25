@@ -19,8 +19,12 @@ export class Renderer {
                 platform.render(this);
             }
             
-            window.requestAnimationFrame(this.draw);
+            this.frameRequest = window.requestAnimationFrame(this.draw);
         };
+    }
+
+    stop() {
+        window.cancelAnimationFrame(this.frameRequest);
     }
     
     drawBall(ball){

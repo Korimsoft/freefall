@@ -69,6 +69,7 @@ class Application {
         game.gameStatsChanged = (gs) => this.updateGameStats(gs);
         game.gameStarted(() => this.gameOver());
 
+        this.renderer = renderer;
         renderer.draw();
         this.gameLoop = setInterval(()=> game.onGameLoopTick(), GAME_LOOP_PERIOD);
         this.platformGeneratorLoop = setInterval(()=> game.onGeneratorLoopTick(), GENERATOR_LOOP_PERIOD);
@@ -80,6 +81,7 @@ class Application {
         this.view.startButton.removeAttribute('disabled');
         clearInterval(this.gameLoop);
         clearInterval(this.platformGeneratorLoop);
+        this.renderer.stop();
         
         console.debug('Game over');
     }
