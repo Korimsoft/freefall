@@ -11,6 +11,7 @@ A casual arcade game: static files in `app/`, served by a small Express server (
 
 ## Releases
 
-- Every merge into `main` is released by `.github/workflows/release.yml`: it raises `version` in package.json by one and tags `v<n>`.
-- Never change `version` in package.json and never push `v*` tags yourself.
+- Every merge into `main` is released by `.github/workflows/release.yml`: it pushes the tag `v<n>`, one more than the highest `v<n>` tag. It commits nothing.
+- The git tags hold the release version. `version` in package.json is not the release version: never change it to match a release.
+- Never push `v*` tags yourself.
 - Never push to `main` directly: work on a branch and open a pull request into `main`.
