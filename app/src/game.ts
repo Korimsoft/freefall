@@ -10,8 +10,6 @@ const GENERATOR_LOOP_PERIOD = 200;
 
 const BALL_RADIUS = 10;
 
-console.debug('Game module imported');
-
 type View = {
     canvas: HTMLCanvasElement,
     startButton: HTMLButtonElement,
@@ -28,8 +26,6 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
 }
 
 const initView = (): View => {
-    console.debug('Initializing');
-
     const canvas = elementById('canvas', HTMLCanvasElement);
     canvas.setAttribute('width', '300px');
     canvas.setAttribute('height', '500px');
@@ -66,7 +62,6 @@ class Application {
 
     startClick(event: MouseEvent): void {
         event.preventDefault();
-        console.debug('Game started');
 
         this.view.startButton.setAttribute('disabled', 'true');
 
@@ -95,8 +90,6 @@ class Application {
         clearInterval(this.gameLoop);
         clearInterval(this.platformGeneratorLoop);
         this.renderer?.stop();
-
-        console.debug('Game over');
     }
 
     updateGameStats(gameStats: GameStats): void {
