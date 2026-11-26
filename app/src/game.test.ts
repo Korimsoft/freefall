@@ -116,11 +116,11 @@ afterEach(() => {
 });
 
 describe('game page before the start', () => {
-    it('sizes the canvas to 300 × 500 px', async () => {
+    it('gives the canvas 300 × 500 pixels on a screen without touch controls', async () => {
         const { canvas } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
-        expect(canvas.getAttribute('width')).toBe('300px');
-        expect(canvas.getAttribute('height')).toBe('500px');
+        expect(canvas.width).toBe(300);
+        expect(canvas.height).toBe(500);
     });
 
     it('shows the menu over the board, without the Game Over message', async () => {

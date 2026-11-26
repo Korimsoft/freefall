@@ -31,6 +31,12 @@ export class Renderer {
 
     // An arrow function, so that requestAnimationFrame calls it with this bound.
     draw = (): void => {
+        // The canvas may have more pixels than the board has units (a scaled board, a sharp screen).
+        this.ctx.setTransform(
+            this.canvas.width / this.canvas.offsetWidth, 0,
+            0, this.canvas.height / this.canvas.offsetHeight,
+            0, 0,
+        );
         this.ctx.clearRect(0, 0, this.canvas.offsetWidth, this.canvas.offsetHeight);
         this.gameState.ball.render(this);
 

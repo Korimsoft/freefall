@@ -29,6 +29,22 @@ describe('Renderer', () => {
         expect(ctx.arc.mock.invocationCallOrder[0]).toBeLessThan(ctx.rect.mock.invocationCallOrder[0]);
     });
 
+    it('draws the board in board units on a canvas with more pixels than units', () => {
+        const ctx = givenAFakeContext();
+        const ball = givenABall({ x: 150, y: 30, radius: 10, board: BOARD_300_BY_500 });
+        const canvas = givenACanvasDrawingInto(ctx, BOARD_300_BY_500);
+        canvas.width = 750;
+        canvas.height = 1250;
+        const renderer = new Renderer(canvas, { ball, platforms: [] });
+
+        renderer.draw();
+
+        expect(ctx.setTransform).toHaveBeenCalledWith(2.5, 0, 0, 2.5, 0, 0);
+        expect(ctx.setTransform.mock.invocationCallOrder[0]).toBeLessThan(ctx.clearRect.mock.invocationCallOrder[0]);
+        expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 300, 500);
+        expect(ctx.arc).toHaveBeenCalledWith(150, 30, 10, 0, 2 * Math.PI);
+    });
+
     it('keeps drawing a frame per animation frame until stopped', () => {
         const ctx = givenAFakeContext();
         const ball = givenABall({ x: 150, y: 30, radius: 10, board: BOARD_300_BY_500 });

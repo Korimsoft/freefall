@@ -4,6 +4,7 @@ import { Platform, PlatformGenerator } from './platform';
 import { GameHud } from './hud';
 import { GameMenu, MENU_START_EVENT } from './menu';
 import { CONTROLS_STEER_EVENT, GameControls, Steer } from './controls';
+import { keepBoardFitted } from './board-fit';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
@@ -14,6 +15,7 @@ const GENERATOR_LOOP_PERIOD = 200;
 const BALL_RADIUS = 10;
 
 type View = {
+    board: HTMLElement,
     canvas: HTMLCanvasElement,
     hud: GameHud,
     menu: GameMenu,
@@ -29,16 +31,15 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
 }
 
 const initView = (): View => {
-    const canvas = elementById('canvas', HTMLCanvasElement);
-    canvas.setAttribute('width', '300px');
-    canvas.setAttribute('height', '500px');
-
-    return {
-        canvas,
+    const view = {
+        board: elementById('board', HTMLElement),
+        canvas: elementById('canvas', HTMLCanvasElement),
         hud: elementById('hud', GameHud),
         menu: elementById('menu', GameMenu),
         controls: elementById('controls', GameControls),
     };
+    keepBoardFitted(view);
+    return view;
 };
 
 class Application {
