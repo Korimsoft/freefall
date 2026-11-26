@@ -1,5 +1,5 @@
 export default {
-    testEnvironment: 'jsdom',
+    testEnvironment: '<rootDir>/jest-environment.js',
     roots: ['<rootDir>/app/src'],
     transform: {
         '^.+\\.ts$': 'ts-jest',

@@ -12,6 +12,7 @@ A casual arcade game: a page and its TypeScript in `app/`, bundled and served by
 - Develop: `pnpm dev` (Vite's dev server at http://localhost:5173, updates the page on every save).
 - Run the built game: `pnpm start` (builds, then serves `dist/` with `vite preview`), then open http://localhost:8080
 - Test: `pnpm test` (Jest with ts-jest, jsdom); type check: `pnpm typecheck`.
+- Jest runs on the jsdom installed in the project through `jest-environment.js` (built on `@jest/environment-jsdom-abstract`), not on `jest-environment-jsdom`, which still pins jsdom 26 and with it the deprecated `whatwg-encoding`. Update jsdom with `pnpm add -D jsdom@latest`.
 - Tests are TypeScript files next to the code they test in `app/src` (e.g. `ball.test.ts`), with shared test helpers in `app/src/fixtures.ts`. The build leaves them out of `dist/`.
 - TypeScript stays on 6.x: ts-jest does not support TypeScript 7 yet.
 
