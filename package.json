@@ -13,11 +13,12 @@
   "author": "Korimsoft",
   "license": "GPL-2.0",
   "devDependencies": {
+    "@jest/environment-jsdom-abstract": "^30.5.2",
     "@testing-library/dom": "^10.4.2",
     "@types/jest": "^30.0.0",
     "eslint": "^10.15.0",
     "jest": "^30.5.2",
-    "jest-environment-jsdom": "^30.5.2",
+    "jsdom": "^31.0.1",
     "ts-jest": "^29.4.15",
     "typescript": "^6.0.3",
     "vite": "^8.3.8"
