@@ -35,7 +35,7 @@ div.board {
     height: 500px;
 }
 
-div.hud {
+game-hud {
     position: absolute;
     top: 0;
     left: 0;
@@ -77,7 +77,7 @@ div.hud {
     }
 }
 
-div.menu {
+game-menu {
     position: absolute;
     inset: 0;
     display: flex;

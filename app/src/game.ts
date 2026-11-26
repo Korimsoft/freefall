@@ -1,7 +1,8 @@
 import { Ball, Size } from './ball';
 import { Renderer } from './renderer';
 import { Platform, PlatformGenerator } from './platform';
-import { Hud } from './hud';
+import { GameHud } from './hud';
+import { GameMenu, MENU_START_EVENT } from './menu';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
@@ -13,12 +14,8 @@ const BALL_RADIUS = 10;
 
 type View = {
     canvas: HTMLCanvasElement,
-    startButton: HTMLButtonElement,
-    menu: HTMLElement,
-    gameOverMessage: HTMLElement,
-    finalScore: HTMLElement,
-    lives: HTMLElement,
-    scoreCounter: HTMLElement,
+    hud: GameHud,
+    menu: GameMenu,
 };
 
 function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
@@ -36,12 +33,8 @@ const initView = (): View => {
 
     return {
         canvas,
-        startButton: elementById('start', HTMLButtonElement),
-        menu: elementById('menu', HTMLElement),
-        gameOverMessage: elementById('game-over', HTMLElement),
-        finalScore: elementById('final-score', HTMLElement),
-        lives: elementById('lives', HTMLElement),
-        scoreCounter: elementById('score-counter', HTMLElement),
+        hud: elementById('hud', GameHud),
+        menu: elementById('menu', GameMenu),
     };
 };
 
@@ -50,7 +43,6 @@ class Application {
     canvas: HTMLCanvasElement;
     boardDimensions: Size;
     platformGenerator: PlatformGenerator;
-    hud: Hud;
     renderer?: Renderer;
     gameLoop?: number;
     platformGeneratorLoop?: number;
@@ -64,15 +56,12 @@ class Application {
         };
 
         this.platformGenerator = new PlatformGenerator(this.boardDimensions);
-        this.hud = new Hud(view.scoreCounter, view.lives);
 
-        this.view.startButton.onclick = (e) => this.startClick(e);
+        this.view.menu.addEventListener(MENU_START_EVENT, () => this.startClick());
     }
 
-    startClick(event: MouseEvent): void {
-        event.preventDefault();
-
-        this.view.menu.hidden = true;
+    startClick(): void {
+        this.view.menu.hide();
 
         this.view.canvas.focus();
 
@@ -97,13 +86,11 @@ class Application {
         clearInterval(this.gameLoop);
         clearInterval(this.platformGeneratorLoop);
         this.renderer?.stop();
-        this.view.finalScore.textContent = String(Math.floor(gameStats.score));
-        this.view.gameOverMessage.hidden = false;
-        this.view.menu.hidden = false;
+        this.view.menu.showGameOver(gameStats.score);
     }
 
     updateGameStats(gameStats: GameStats): void {
-        this.hud.show(gameStats);
+        this.view.hud.show(gameStats);
     }
 
     keyDown(currentKey: number, gameState: Game): void {

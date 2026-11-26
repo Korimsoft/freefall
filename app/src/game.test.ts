@@ -51,6 +51,14 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
     return element;
 }
 
+function inside<T extends HTMLElement>(component: string, selector: string, type: new () => T): T {
+    const element = document.querySelector(`${component} ${selector}`);
+    if (!(element instanceof type)) {
+        throw new Error(`The page has no ${type.name} "${selector}" in "${component}"`);
+    }
+    return element;
+}
+
 // game.js sets itself up on the page as soon as it is imported, so every test
 // imports a fresh copy into a fresh page.
 async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: number[] }): Promise<GamePage> {
@@ -65,12 +73,12 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
     return {
         ctx,
         canvas,
-        startButton: elementById('start', HTMLButtonElement),
+        startButton: inside('#menu', 'button.start', HTMLButtonElement),
         menu: elementById('menu', HTMLElement),
-        gameOverMessage: elementById('game-over', HTMLElement),
-        finalScore: () => elementById('final-score', HTMLElement).textContent ?? '',
-        lives: () => String(document.querySelectorAll('#lives .life:not(.life-lost)').length),
-        score: () => elementById('score-counter', HTMLElement).innerHTML,
+        gameOverMessage: inside('#menu', '.game-over', HTMLElement),
+        finalScore: () => inside('#menu', '.final-score', HTMLElement).textContent ?? '',
+        lives: () => String(document.querySelectorAll('#hud .lives .life:not(.life-lost)').length),
+        score: () => inside('#hud', '.score-counter', HTMLElement).innerHTML,
         drawnBall: () => {
             const [x, y] = ctx.arc.mock.lastCall ?? [];
             return { x, y };
@@ -216,7 +224,7 @@ describe('a running game', () => {
 
     it('blinks the leftmost life ball when a life is lost and then takes it away', async () => {
         const { startButton } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
-        const lifeBalls = () => Array.from(document.querySelectorAll('#lives .life'))
+        const lifeBalls = () => Array.from(document.querySelectorAll('#hud .lives .life'))
             .map(ball => ball.classList.contains('life-lost') ? 'blinking' : 'ball');
         startButton.click();
         expect(lifeBalls()).toEqual(['ball', 'ball', 'ball']);
