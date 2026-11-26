@@ -24,15 +24,22 @@ div.title {
     color: white;
 }
 
+/* board-fit.ts sets --board-scale: above 1 on a phone, where the board is drawn bigger to fill the screen. */
 div.center {
     margin: auto;
-    width: 300px;
+    width: calc(300px * var(--board-scale, 1));
+}
+
+div.game {
+    height: calc(500px * var(--board-scale, 1));
 }
 
 div.board {
     position: relative;
     width: 300px;
     height: 500px;
+    transform: scale(var(--board-scale, 1));
+    transform-origin: top left;
 }
 
 game-hud {
@@ -99,7 +106,60 @@ div.game-over-title {
     font-weight: bold;
 }
 
+/* The canvas's own width and height are its pixels, which board-fit.ts sets to the screen's; this is its size on the board. */
 canvas {
+    width: 300px;
+    height: 500px;
     display: block;
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Only phones and tablets, where the main pointer is a finger, get the buttons. */
+game-controls {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    game-controls {
+        display: flex;
+        justify-content: space-between;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 0 max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+        /* The strip between the buttons lies over the page and must not take its touches. */
+        pointer-events: none;
+    }
+}
+
+.touch-control {
+    pointer-events: auto;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    /* A held button must not zoom the page, select its arrow or open the iOS callout. */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.touch-control svg {
+    width: 36px;
+    height: 36px;
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    stroke-linejoin: miter;
+}
+
+.touch-control:active {
+    background: rgba(255, 255, 255, 0.35);
 }

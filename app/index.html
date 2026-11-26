@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script src="./src/game.ts" type="module"></script>
     <link rel="stylesheet" type="text/css" href="./resources/styles/style.css">
@@ -14,13 +14,14 @@
     <div class="center">
         <div class="title">Freefall</div>
         <div class="game">
-            <div class="board">
+            <div class="board" id="board">
                 <canvas id="canvas" tabindex="0"></canvas>
                 <game-hud id="hud"></game-hud>
                 <game-menu id="menu"></game-menu>
             </div>
         </div>
     </div>
+    <game-controls id="controls"></game-controls>
 </body>
 
 </html>

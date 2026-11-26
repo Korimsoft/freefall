@@ -12,6 +12,12 @@ pnpm start
 
 While working on the game, run `pnpm dev` instead: it serves the game at http://localhost:5173 and updates the page every time you save a file.
 
+## Playing
+
+Steer the falling ball with the left and right arrow keys. On a phone or tablet (a device whose main pointer is a finger), two buttons in the bottom corners of the screen do the same while held. When both are held, lifting one sends the ball the way of the one still held.
+
+On such a device the board is also drawn bigger, to fill the screen with a 16 px margin, above the buttons or, with the phone turned sideways, between them. The game itself stays 300 × 500 units, so the ball and the platforms move the same on every screen.
+
 ## Testing
 
 ```

@@ -3,6 +3,8 @@ import { Renderer } from './renderer';
 import { Platform, PlatformGenerator } from './platform';
 import { GameHud } from './hud';
 import { GameMenu, MENU_START_EVENT } from './menu';
+import { CONTROLS_STEER_EVENT, GameControls, SteerDirection } from './controls';
+import { keepBoardFitted } from './board-fit';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
@@ -13,9 +15,11 @@ const GENERATOR_LOOP_PERIOD = 200;
 const BALL_RADIUS = 10;
 
 type View = {
+    board: HTMLElement,
     canvas: HTMLCanvasElement,
     hud: GameHud,
     menu: GameMenu,
+    controls: GameControls,
 };
 
 function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
@@ -27,15 +31,15 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
 }
 
 const initView = (): View => {
-    const canvas = elementById('canvas', HTMLCanvasElement);
-    canvas.setAttribute('width', '300px');
-    canvas.setAttribute('height', '500px');
-
-    return {
-        canvas,
+    const view = {
+        board: elementById('board', HTMLElement),
+        canvas: elementById('canvas', HTMLCanvasElement),
         hud: elementById('hud', GameHud),
         menu: elementById('menu', GameMenu),
+        controls: elementById('controls', GameControls),
     };
+    keepBoardFitted(view);
+    return view;
 };
 
 class Application {
@@ -44,6 +48,7 @@ class Application {
     boardDimensions: Size;
     platformGenerator: PlatformGenerator;
     renderer?: Renderer;
+    game?: Game;
     gameLoop?: number;
     platformGeneratorLoop?: number;
 
@@ -58,6 +63,11 @@ class Application {
         this.platformGenerator = new PlatformGenerator(this.boardDimensions);
 
         this.view.menu.addEventListener(MENU_START_EVENT, () => this.startClick());
+        this.view.controls.addEventListener(CONTROLS_STEER_EVENT, (event) => {
+            if (this.game) {
+                this.steer((event as CustomEvent<SteerDirection>).detail, this.game);
+            }
+        });
     }
 
     startClick(): void {
@@ -76,6 +86,7 @@ class Application {
         game.gameStatsChanged = (gs) => this.updateGameStats(gs);
         game.gameStarted(() => this.gameOver(game.gameStats));
 
+        this.game = game;
         this.renderer = renderer;
         renderer.draw();
         this.gameLoop = window.setInterval(() => game.onGameLoopTick(), GAME_LOOP_PERIOD);
@@ -106,6 +117,18 @@ class Application {
 
     keyUp(game: Game): void {
         game.ball.stopHorizontal();
+    }
+
+    steer(direction: SteerDirection, game: Game): void {
+        if (direction === SteerDirection.none) {
+            game.ball.stopHorizontal();
+        } else if (game.running) {
+            if (direction === SteerDirection.left) {
+                game.ball.goLeft();
+            } else {
+                game.ball.goRight();
+            }
+        }
     }
 }
 

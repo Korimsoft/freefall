@@ -22,6 +22,7 @@ export type FakeContext = {
     rect: jest.Mock,
     stroke: jest.Mock,
     fill: jest.Mock,
+    setTransform: jest.Mock,
     fillStyle: unknown,
     strokeStyle: unknown,
     gradient: FakeGradient,
@@ -54,6 +55,7 @@ export function givenAFakeContext(): FakeContext {
         rect: jest.fn(),
         stroke: jest.fn(),
         fill: jest.fn(),
+        setTransform: jest.fn(),
         fillStyle: undefined,
         strokeStyle: undefined,
         gradient,
@@ -87,11 +89,12 @@ export function givenGameMarkup(): string {
         <div class="center">
             <div class="title">Freefall</div>
             <div class="game">
-                <div class="board">
+                <div class="board" id="board">
                     <canvas id="canvas" tabindex="0"></canvas>
                     <game-hud id="hud"></game-hud>
                     <game-menu id="menu"></game-menu>
                 </div>
             </div>
-        </div>`;
+        </div>
+        <game-controls id="controls"></game-controls>`;
 }

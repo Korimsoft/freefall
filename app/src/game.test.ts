@@ -92,6 +92,18 @@ function release(keyCode: number): void {
     window.dispatchEvent(new KeyboardEvent('keyup', { keyCode }));
 }
 
+function touchButton(name: 'Left' | 'Right'): HTMLElement {
+    return within(elementById('controls', HTMLElement)).getByRole('button', { name });
+}
+
+function hold(name: 'Left' | 'Right', pointerId = 1): void {
+    touchButton(name).dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId }));
+}
+
+function lift(name: 'Left' | 'Right', pointerId = 1): void {
+    touchButton(name).dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId }));
+}
+
 beforeEach(() => {
     jest.useFakeTimers();
     jest.spyOn(console, 'debug').mockImplementation(() => {});
@@ -104,11 +116,11 @@ afterEach(() => {
 });
 
 describe('game page before the start', () => {
-    it('sizes the canvas to 300 × 500 px', async () => {
+    it('gives the canvas 300 × 500 pixels on a screen without touch controls', async () => {
         const { canvas } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
-        expect(canvas.getAttribute('width')).toBe('300px');
-        expect(canvas.getAttribute('height')).toBe('500px');
+        expect(canvas.width).toBe(300);
+        expect(canvas.height).toBe(500);
     });
 
     it('shows the menu over the board, without the Game Over message', async () => {
@@ -246,6 +258,69 @@ describe('a running game', () => {
         expect(Number(scoreBeforeLifeLost)).toBeGreaterThanOrEqual(455);
         expect(Number(scoreBeforeLifeLost)).toBeLessThanOrEqual(456);
         expect(score()).toBe(scoreBeforeLifeLost);
+    });
+});
+
+describe('touch controls in a running game', () => {
+    it('move the ball 5 px right per tick while Right is held', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        startButton.click();
+        hold('Right');
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+        const before = drawnBall().x;
+
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+
+        expect(drawnBall().x - before).toBe(20);
+    });
+
+    it('move the ball 5 px left per tick while Left is held', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        startButton.click();
+        hold('Left');
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+        const before = drawnBall().x;
+
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+
+        expect(drawnBall().x - before).toBe(-20);
+    });
+
+    it('stop the ball sideways when the button is lifted', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        startButton.click();
+        hold('Right');
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+        lift('Right');
+        const before = drawnBall().x;
+
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+
+        expect(drawnBall().x).toBe(before);
+    });
+
+    it('send the ball left again when Right is lifted while Left is still held', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        startButton.click();
+        hold('Left', 1);
+        hold('Right', 2);
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+        lift('Right', 2);
+        const before = drawnBall().x;
+
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+
+        expect(drawnBall().x - before).toBe(-20);
+    });
+
+    it('do nothing before the game is started', async () => {
+        const { startButton, drawnBall } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        hold('Right');
+
+        startButton.click();
+        jest.advanceTimersByTime(FOUR_TICKS_BETWEEN_FRAMES_MS);
+
+        expect(drawnBall().x).toBe(150);
     });
 });
 
