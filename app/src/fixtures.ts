@@ -87,7 +87,6 @@ export function givenRandomNumbers(...numbers: number[]): void {
 export function givenGameMarkup(): string {
     return `
         <div class="center">
-            <div class="title">Freefall</div>
             <div class="game">
                 <div class="board" id="board">
                     <canvas id="canvas" tabindex="0"></canvas>
