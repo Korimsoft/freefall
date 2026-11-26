@@ -1,5 +1,5 @@
-import type { Ball, Size } from './ball.js';
-import type { Renderer } from './renderer.js';
+import type { Ball, Size } from './ball';
+import type { Renderer } from './renderer';
 
 export const PLATFORM_WIDTH = 100;
 export const PLATFORM_HEIGHT = 10;

@@ -1,5 +1,5 @@
-import { PlatformGenerator } from './platform.js';
-import { Renderer } from './renderer.js';
+import { PlatformGenerator } from './platform';
+import { Renderer } from './renderer';
 import {
     givenABall,
     givenACanvasDrawingInto,

@@ -17,7 +17,7 @@ pnpm test
 pnpm typecheck
 ```
 
-The game and its tests are written in TypeScript; the tests are Jest tests next to the code they test (`app/src/ball.test.ts` tests `app/src/ball.ts`). The build compiles `app/src` to JavaScript with `tsconfig.build.json`, which leaves `*.test.ts` files and `fixtures.ts` out of `dist/`, so players never get them.
+The game and its tests are written in TypeScript; the tests are Jest tests next to the code they test (`app/src/ball.test.ts` tests `app/src/ball.ts`). The build bundles `app/src/game.ts` and the code it imports with esbuild into one `dist/src/game.js`; the `*.test.ts` files and `fixtures.ts` are not part of the game's imports, so players never get them.
 
 ## Releasing
 

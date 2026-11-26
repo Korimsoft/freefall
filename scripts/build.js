@@ -1,22 +1,28 @@
 #!/usr/bin/env node
 
-// Builds what players get: app/ without its TypeScript, then app/src compiled
-// to JavaScript by tsconfig.build.json, which leaves out the tests and their helpers.
+// Builds what players get: app/ without its TypeScript, then the game bundled
+// from app/src/game.ts into one dist/src/game.js. The tests and their helpers
+// are not imported by the game, so they never get into the bundle.
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { build } from 'esbuild';
 
 const root = path.join(import.meta.dirname, '..');
 const source = path.join(root, 'app');
 const target = path.join(root, 'dist');
-const tsc = fileURLToPath(import.meta.resolve('typescript/bin/tsc'));
 
 const isTypeScript = (file) => file.endsWith('.ts');
 
 fs.rmSync(target, { recursive: true, force: true });
 fs.cpSync(source, target, { recursive: true, filter: (file) => !isTypeScript(file) });
-execFileSync(process.execPath, [tsc, '-p', path.join(root, 'tsconfig.build.json')], { stdio: 'inherit' });
+await build({
+    entryPoints: [path.join(source, 'src', 'game.ts')],
+    outfile: path.join(target, 'src', 'game.js'),
+    bundle: true,
+    format: 'esm',
+    target: 'es2022',
+    logLevel: 'warning',
+});
 
 console.log(`Built ${path.relative(root, target)}/`);

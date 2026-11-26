@@ -4,8 +4,4 @@ export default {
     transform: {
         '^.+\\.ts$': 'ts-jest',
     },
-    // The sources import each other as './ball.js', the name the browser loads.
-    moduleNameMapper: {
-        '^(\\.{1,2}/.*)\\.js$': '$1',
-    },
 };

@@ -1,5 +1,5 @@
-import { Ball } from './ball.js';
-import { PlatformGenerator } from './platform.js';
+import { Ball } from './ball';
+import { PlatformGenerator } from './platform';
 
 export type Size = {
     width: number,
@@ -87,12 +87,12 @@ export function givenGameMarkup(): string {
         <div class="center">
             <div class="title">Freefall</div>
             <div class="game">
-                <div id="game-stats" class="game-stats">
-                    <span id="score" class="left">Score: <span id="score-counter">0</span></span>
-                    <span id="lives" class="right"><span id="lives-counter"></span></span>
-                </div>
                 <div class="board">
                     <canvas id="canvas" tabindex="0"></canvas>
+                    <div id="hud" class="hud">
+                        <span class="score">Score: <span id="score-counter">0</span></span>
+                        <span id="lives" class="lives"></span>
+                    </div>
                     <div id="menu" class="menu">
                         <div id="game-over" class="game-over" hidden>
                             <div class="game-over-title">Game Over</div>

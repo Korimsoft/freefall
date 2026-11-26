@@ -1,6 +1,7 @@
-import { Ball, Size } from './ball.js';
-import { Renderer } from './renderer.js';
-import { Platform, PlatformGenerator } from './platform.js';
+import { Ball, Size } from './ball';
+import { Renderer } from './renderer';
+import { Platform, PlatformGenerator } from './platform';
+import { Hud } from './hud';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
@@ -16,7 +17,7 @@ type View = {
     menu: HTMLElement,
     gameOverMessage: HTMLElement,
     finalScore: HTMLElement,
-    livesCounter: HTMLElement,
+    lives: HTMLElement,
     scoreCounter: HTMLElement,
 };
 
@@ -39,7 +40,7 @@ const initView = (): View => {
         menu: elementById('menu', HTMLElement),
         gameOverMessage: elementById('game-over', HTMLElement),
         finalScore: elementById('final-score', HTMLElement),
-        livesCounter: elementById('lives-counter', HTMLElement),
+        lives: elementById('lives', HTMLElement),
         scoreCounter: elementById('score-counter', HTMLElement),
     };
 };
@@ -49,6 +50,7 @@ class Application {
     canvas: HTMLCanvasElement;
     boardDimensions: Size;
     platformGenerator: PlatformGenerator;
+    hud: Hud;
     renderer?: Renderer;
     gameLoop?: number;
     platformGeneratorLoop?: number;
@@ -62,6 +64,7 @@ class Application {
         };
 
         this.platformGenerator = new PlatformGenerator(this.boardDimensions);
+        this.hud = new Hud(view.scoreCounter, view.lives);
 
         this.view.startButton.onclick = (e) => this.startClick(e);
     }
@@ -100,8 +103,7 @@ class Application {
     }
 
     updateGameStats(gameStats: GameStats): void {
-        this.view.livesCounter.innerHTML = String(gameStats.lives);
-        this.view.scoreCounter.innerHTML = String(Math.floor(gameStats.score));
+        this.hud.show(gameStats);
     }
 
     keyDown(currentKey: number, gameState: Game): void {
