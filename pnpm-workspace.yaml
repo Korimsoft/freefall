@@ -1,3 +1,7 @@
 allowBuilds:
   '@parcel/watcher': false
   esbuild: false
+
+overrides:
+  minimatch: ^11.0.1
+  glob: ^14.0.6
