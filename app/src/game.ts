@@ -3,7 +3,7 @@ import { Renderer } from './renderer';
 import { Platform, PlatformGenerator } from './platform';
 import { GameHud } from './hud';
 import { GameMenu, MENU_START_EVENT } from './menu';
-import { CONTROLS_STEER_EVENT, GameControls, Steer } from './controls';
+import { CONTROLS_STEER_EVENT, GameControls, SteerDirection } from './controls';
 import { keepBoardFitted } from './board-fit';
 
 const KEY_LEFT = 37;
@@ -65,7 +65,7 @@ class Application {
         this.view.menu.addEventListener(MENU_START_EVENT, () => this.startClick());
         this.view.controls.addEventListener(CONTROLS_STEER_EVENT, (event) => {
             if (this.game) {
-                this.steer((event as CustomEvent<Steer>).detail, this.game);
+                this.steer((event as CustomEvent<SteerDirection>).detail, this.game);
             }
         });
     }
@@ -119,11 +119,11 @@ class Application {
         game.ball.stopHorizontal();
     }
 
-    steer(direction: Steer, game: Game): void {
-        if (direction === Steer.none) {
+    steer(direction: SteerDirection, game: Game): void {
+        if (direction === SteerDirection.none) {
             game.ball.stopHorizontal();
         } else if (game.running) {
-            if (direction === Steer.left) {
+            if (direction === SteerDirection.left) {
                 game.ball.goLeft();
             } else {
                 game.ball.goRight();

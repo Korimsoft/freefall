@@ -2,17 +2,17 @@ import { defineOnce } from './custom-element';
 
 export const CONTROLS_STEER_EVENT = 'steer';
 
-export const Steer = {
+export const SteerDirection = {
     left: 'left',
     right: 'right',
     none: 'none',
 } as const;
 
-export type Steer = typeof Steer[keyof typeof Steer];
+export type SteerDirection = typeof SteerDirection[keyof typeof SteerDirection];
 
 type Held = {
     pointerId: number,
-    direction: Steer,
+    direction: SteerDirection,
 };
 
 class GameControlsElement extends HTMLElement {
@@ -32,11 +32,11 @@ class GameControlsElement extends HTMLElement {
             <button class="touch-control right" aria-label="Right">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8,5 19,12 8,19"/></svg>
             </button>`;
-        this.listenToButtonActions(this.querySelector<HTMLButtonElement>('.left'), Steer.left);
-        this.listenToButtonActions(this.querySelector<HTMLButtonElement>('.right'), Steer.right);
+        this.listenToButtonActions(this.querySelector<HTMLButtonElement>('.left'), SteerDirection.left);
+        this.listenToButtonActions(this.querySelector<HTMLButtonElement>('.right'), SteerDirection.right);
     }
 
-    private listenToButtonActions(button: HTMLButtonElement | null, direction: Steer): void {
+    private listenToButtonActions(button: HTMLButtonElement | null, direction: SteerDirection): void {
         if (!button) {
             return;
         }
@@ -63,8 +63,8 @@ class GameControlsElement extends HTMLElement {
     }
 
     private steer(): void {
-        const direction = this.directionButtonsHeld.at(-1)?.direction ?? Steer.none;
-        this.dispatchEvent(new CustomEvent<Steer>(CONTROLS_STEER_EVENT, { detail: direction }));
+        const direction = this.directionButtonsHeld.at(-1)?.direction ?? SteerDirection.none;
+        this.dispatchEvent(new CustomEvent<SteerDirection>(CONTROLS_STEER_EVENT, { detail: direction }));
     }
 }
 

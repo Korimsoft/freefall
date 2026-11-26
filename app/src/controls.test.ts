@@ -1,20 +1,20 @@
 import { within } from '@testing-library/dom';
-import { CONTROLS_STEER_EVENT, GameControls, Steer } from './controls';
+import { CONTROLS_STEER_EVENT, GameControls, SteerDirection } from './controls';
 
 type ControlsPage = {
     controls: GameControls,
     buttons: () => string[],
     left: () => HTMLElement,
     right: () => HTMLElement,
-    steered: Steer[],
+    steered: SteerDirection[],
 };
 
 function givenControls(): ControlsPage {
     document.body.innerHTML = '';
     const controls = document.createElement('game-controls') as GameControls;
     document.body.append(controls);
-    const steered: Steer[] = [];
-    controls.addEventListener(CONTROLS_STEER_EVENT, (event) => steered.push((event as CustomEvent<Steer>).detail));
+    const steered: SteerDirection[] = [];
+    controls.addEventListener(CONTROLS_STEER_EVENT, (event) => steered.push((event as CustomEvent<SteerDirection>).detail));
     return {
         controls,
         buttons: () => within(controls).getAllByRole('button').map(button => button.getAttribute('aria-label') ?? ''),
