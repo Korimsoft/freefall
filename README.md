@@ -10,6 +10,8 @@ pnpm start
 
 `pnpm start` builds the game into `dist/` and serves it at http://localhost:8080. To only build, run `pnpm build`.
 
+While working on the game, run `pnpm dev` instead: it serves the game at http://localhost:5173 and updates the page every time you save a file.
+
 ## Testing
 
 ```
@@ -17,7 +19,7 @@ pnpm test
 pnpm typecheck
 ```
 
-The game and its tests are written in TypeScript; the tests are Jest tests next to the code they test (`app/src/ball.test.ts` tests `app/src/ball.ts`). The build bundles `app/src/game.ts` and the code it imports with esbuild into one `dist/src/game.js`; the `*.test.ts` files and `fixtures.ts` are not part of the game's imports, so players never get them.
+The game and its tests are written in TypeScript; the tests are Jest tests next to the code they test (`app/src/ball.test.ts` tests `app/src/ball.ts`). The build bundles, with Vite, what `app/index.html` loads: `app/src/game.ts` with the code it imports, and the stylesheet. The `*.test.ts` files and `fixtures.ts` are not part of the game's imports, so players never get them.
 
 ## Releasing
 

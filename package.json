@@ -2,11 +2,11 @@
   "name": "freefall",
   "version": "1.0.0",
   "description": "A game",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.js",
-    "start": "pnpm build && node .",
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite build && vite preview",
     "test": "jest",
     "typecheck": "tsc"
   },
@@ -14,15 +14,12 @@
   "license": "GPL-2.0",
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "esbuild": "^0.28.2",
     "eslint": "^10.15.0",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "ts-jest": "^29.4.15",
-    "typescript": "^6.0.3"
-  },
-  "dependencies": {
-    "express": "^4.22.3"
+    "typescript": "^6.0.3",
+    "vite": "^8.3.8"
   },
   "packageManager": "pnpm@12.23.0"
 }

@@ -1,15 +1,16 @@
 # freefall
 
-A casual arcade game: static files in `app/`, served by a small Express server (`index.js`).
+A casual arcade game: a page and its TypeScript in `app/`, bundled and served by Vite (`vite.config.js`).
 
 ## Commands
 
 - Package manager: pnpm (version in `packageManager` in package.json). Never use npm or yarn, and never commit a `package-lock.json`.
 - Install: `pnpm install`
-- Build: `pnpm build` (`scripts/build.js`) copies `app/` without its `.ts` files into `dist/` and bundles `app/src/game.ts` and everything it imports with esbuild into one `dist/src/game.js`, the only script the page loads. The tests and `fixtures.ts` are not imported by the game, so they are not in the bundle. `tsc` only type checks.
-- Sources import each other without a file ending (`./ball`); esbuild and Jest find the `.ts` file. The browser only ever loads the bundle.
-- esbuild's install script stays off (`allowBuilds` in `pnpm-workspace.yaml`): it is not needed, because its binary comes as a platform package.
-- Run: `pnpm start` (builds, then serves `dist/`), then open http://localhost:8080
+- Build: `pnpm build` (`vite build`) bundles what `app/index.html` loads (`app/src/game.ts` and everything it imports, and the stylesheet) into `dist/index.html` and hashed files in `dist/assets/`, with relative paths (`base: './'`). The tests and `fixtures.ts` are not imported by the game, so they are not in the bundle. `tsc` only type checks.
+- Sources import each other without a file ending (`./ball`); Vite and Jest find the `.ts` file.
+- esbuild is still installed, as an optional peer of Vite and ts-jest. Its install script stays off (`allowBuilds` in `pnpm-workspace.yaml`): it is not needed, because its binary comes as a platform package.
+- Develop: `pnpm dev` (Vite's dev server at http://localhost:5173, updates the page on every save).
+- Run the built game: `pnpm start` (builds, then serves `dist/` with `vite preview`), then open http://localhost:8080
 - Test: `pnpm test` (Jest with ts-jest, jsdom); type check: `pnpm typecheck`.
 - Tests are TypeScript files next to the code they test in `app/src` (e.g. `ball.test.ts`), with shared test helpers in `app/src/fixtures.ts`. The build leaves them out of `dist/`.
 - TypeScript stays on 6.x: ts-jest does not support TypeScript 7 yet.
