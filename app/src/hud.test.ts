@@ -1,22 +1,20 @@
-import { Hud, LIFE_BLINK_MS } from './hud';
+import { GameHud, LIFE_BLINK_MS } from './hud';
 
 type HudPage = {
-    hud: Hud,
+    hud: GameHud,
     score: () => string,
     balls: () => HTMLElement[],
     blinking: () => boolean[],
 };
 
 function givenAHud(): HudPage {
-    document.body.innerHTML = `
-        <span id="score-counter">0</span>
-        <span id="lives"></span>`;
-    const scoreCounter = document.getElementById('score-counter') as HTMLElement;
-    const lives = document.getElementById('lives') as HTMLElement;
-    const balls = () => Array.from(lives.querySelectorAll<HTMLElement>('.life'));
+    document.body.innerHTML = '';
+    const hud = document.createElement('game-hud') as GameHud;
+    document.body.append(hud);
+    const balls = () => Array.from(hud.querySelectorAll<HTMLElement>('.lives .life'));
     return {
-        hud: new Hud(scoreCounter, lives),
-        score: () => scoreCounter.textContent ?? '',
+        hud,
+        score: () => hud.querySelector('.score-counter')?.textContent ?? '',
         balls,
         blinking: () => balls().map(ball => ball.classList.contains('life-lost')),
     };
@@ -31,7 +29,16 @@ afterEach(() => {
     jest.useRealTimers();
 });
 
-describe('Hud', () => {
+describe('GameHud', () => {
+    it('shows a score of 0 and no balls before the first game', () => {
+        const { hud, score, balls } = givenAHud();
+
+        expect(hud).toBeInstanceOf(GameHud);
+        expect(hud.textContent).toContain('Score:');
+        expect(score()).toBe('0');
+        expect(balls()).toHaveLength(0);
+    });
+
     it('shows the score in whole points', () => {
         const { hud, score } = givenAHud();
 

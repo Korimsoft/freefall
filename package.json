@@ -13,6 +13,7 @@
   "author": "Korimsoft",
   "license": "GPL-2.0",
   "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
     "@types/jest": "^30.0.0",
     "eslint": "^10.15.0",
     "jest": "^30.5.2",

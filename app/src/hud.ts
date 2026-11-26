@@ -1,3 +1,5 @@
+import { defineOnce } from './custom-element';
+
 const BLINK_PERIOD_MS = 300;
 const BLINKS = 3;
 export const LIFE_BLINK_MS = BLINK_PERIOD_MS * BLINKS;
@@ -10,37 +12,50 @@ export type HudStats = {
     score: number,
 };
 
-export class Hud {
-    scoreCounter: HTMLElement;
-    lives: HTMLElement;
+class GameHudElement extends HTMLElement {
+    private rendered = false;
+    private scoreCounter?: HTMLElement;
+    private lives?: HTMLElement;
 
-    constructor(scoreCounter: HTMLElement, lives: HTMLElement) {
-        this.scoreCounter = scoreCounter;
-        this.lives = lives;
+    connectedCallback(): void {
+        // Moving the HUD connects it again, which must not reset the score and the balls.
+        if (this.rendered) {
+            return;
+        }
+        this.rendered = true;
+
+        this.innerHTML = `
+            <span class="score">Score: <span class="score-counter">0</span></span>
+            <span class="lives"></span>`;
+        this.scoreCounter = this.querySelector<HTMLElement>('.score-counter') ?? undefined;
+        this.lives = this.querySelector<HTMLElement>('.lives') ?? undefined;
     }
 
     show(stats: HudStats): void {
+        if (!this.scoreCounter || !this.lives) {
+            return;
+        }
         this.scoreCounter.textContent = String(Math.floor(stats.score));
 
-        const standing = this.standingLives();
+        const standing = this.standingLives(this.lives);
         if (stats.lives > standing.length) {
-            this.showFullRow(stats.lives);
+            this.showFullRow(this.lives, stats.lives);
         } else {
             // Blinking balls are always the leftmost ones, so the next loss takes the first ball still standing.
             standing.slice(0, standing.length - stats.lives).forEach(life => this.loseLife(life));
         }
     }
 
-    private standingLives(): HTMLElement[] {
-        return Array.from(this.lives.querySelectorAll<HTMLElement>(`.${LIFE_CLASS}:not(.${LIFE_LOST_CLASS})`));
+    private standingLives(lives: HTMLElement): HTMLElement[] {
+        return Array.from(lives.querySelectorAll<HTMLElement>(`.${LIFE_CLASS}:not(.${LIFE_LOST_CLASS})`));
     }
 
-    private showFullRow(lives: number): void {
-        this.lives.replaceChildren();
-        for (let i = 0; i < lives; i++) {
+    private showFullRow(lives: HTMLElement, count: number): void {
+        lives.replaceChildren();
+        for (let i = 0; i < count; i++) {
             const life = document.createElement('span');
             life.className = LIFE_CLASS;
-            this.lives.append(life);
+            lives.append(life);
         }
     }
 
@@ -51,3 +66,6 @@ export class Hud {
         window.setTimeout(() => life.remove(), LIFE_BLINK_MS);
     }
 }
+
+export const GameHud = defineOnce('game-hud', GameHudElement);
+export type GameHud = GameHudElement;

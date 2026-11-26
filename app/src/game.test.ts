@@ -1,3 +1,4 @@
+import { within } from '@testing-library/dom';
 import {
     FakeContext,
     givenACanvasDrawingInto,
@@ -62,15 +63,20 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
         await import('./game');
     });
 
+    const menu = elementById('menu', HTMLElement);
+    const hud = elementById('hud', HTMLElement);
+    // The Game Over message is hidden at first, and getByRole skips hidden elements.
+    const gameOverMessage = within(menu).getByText('Game Over').parentElement as HTMLElement;
+
     return {
         ctx,
         canvas,
-        startButton: elementById('start', HTMLButtonElement),
-        menu: elementById('menu', HTMLElement),
-        gameOverMessage: elementById('game-over', HTMLElement),
-        finalScore: () => elementById('final-score', HTMLElement).textContent ?? '',
-        lives: () => String(document.querySelectorAll('#lives .life:not(.life-lost)').length),
-        score: () => elementById('score-counter', HTMLElement).innerHTML,
+        startButton: within(menu).getByRole('button', { name: 'Start' }),
+        menu,
+        gameOverMessage,
+        finalScore: () => within(gameOverMessage).getByText(/Score:/).textContent?.replace('Score: ', '') ?? '',
+        lives: () => String(hud.querySelectorAll('.life:not(.life-lost)').length),
+        score: () => within(hud).getByText(/Score:/).textContent?.replace('Score: ', '') ?? '',
         drawnBall: () => {
             const [x, y] = ctx.arc.mock.lastCall ?? [];
             return { x, y };
@@ -216,7 +222,7 @@ describe('a running game', () => {
 
     it('blinks the leftmost life ball when a life is lost and then takes it away', async () => {
         const { startButton } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
-        const lifeBalls = () => Array.from(document.querySelectorAll('#lives .life'))
+        const lifeBalls = () => Array.from(document.querySelectorAll('#hud .life'))
             .map(ball => ball.classList.contains('life-lost') ? 'blinking' : 'ball');
         startButton.click();
         expect(lifeBalls()).toEqual(['ball', 'ball', 'ball']);

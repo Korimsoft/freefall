@@ -89,18 +89,8 @@ export function givenGameMarkup(): string {
             <div class="game">
                 <div class="board">
                     <canvas id="canvas" tabindex="0"></canvas>
-                    <div id="hud" class="hud">
-                        <span class="score">Score: <span id="score-counter">0</span></span>
-                        <span id="lives" class="lives"></span>
-                    </div>
-                    <div id="menu" class="menu">
-                        <div id="game-over" class="game-over" hidden>
-                            <div class="game-over-title">Game Over</div>
-                            <div>Score: <span id="final-score">0</span></div>
-                        </div>
-                        <button id="start" class="game-control">Start</button>
-                        <button id="about" class="game-control">About</button>
-                    </div>
+                    <game-hud id="hud"></game-hud>
+                    <game-menu id="menu"></game-menu>
                 </div>
             </div>
         </div>`;
