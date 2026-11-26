@@ -13,6 +13,9 @@ const BALL_RADIUS = 10;
 type View = {
     canvas: HTMLCanvasElement,
     startButton: HTMLButtonElement,
+    menu: HTMLElement,
+    gameOverMessage: HTMLElement,
+    finalScore: HTMLElement,
     livesCounter: HTMLElement,
     scoreCounter: HTMLElement,
 };
@@ -33,6 +36,9 @@ const initView = (): View => {
     return {
         canvas,
         startButton: elementById('start', HTMLButtonElement),
+        menu: elementById('menu', HTMLElement),
+        gameOverMessage: elementById('game-over', HTMLElement),
+        finalScore: elementById('final-score', HTMLElement),
         livesCounter: elementById('lives-counter', HTMLElement),
         scoreCounter: elementById('score-counter', HTMLElement),
     };
@@ -63,7 +69,7 @@ class Application {
     startClick(event: MouseEvent): void {
         event.preventDefault();
 
-        this.view.startButton.setAttribute('disabled', 'true');
+        this.view.menu.hidden = true;
 
         this.view.canvas.focus();
 
@@ -76,7 +82,7 @@ class Application {
         window.onkeyup = () => this.keyUp(game);
 
         game.gameStatsChanged = (gs) => this.updateGameStats(gs);
-        game.gameStarted(() => this.gameOver());
+        game.gameStarted(() => this.gameOver(game.gameStats));
 
         this.renderer = renderer;
         renderer.draw();
@@ -84,12 +90,13 @@ class Application {
         this.platformGeneratorLoop = window.setInterval(() => game.onGeneratorLoopTick(), GENERATOR_LOOP_PERIOD);
     }
 
-    gameOver(): void {
-        alert('You died');
-        this.view.startButton.removeAttribute('disabled');
+    gameOver(gameStats: GameStats): void {
         clearInterval(this.gameLoop);
         clearInterval(this.platformGeneratorLoop);
         this.renderer?.stop();
+        this.view.finalScore.textContent = String(Math.floor(gameStats.score));
+        this.view.gameOverMessage.hidden = false;
+        this.view.menu.hidden = false;
     }
 
     updateGameStats(gameStats: GameStats): void {
@@ -138,9 +145,12 @@ class Game {
             platform.move();
         }
         const ballYOriginal = this.ball.y;
+        const livesBefore = this.gameStats.lives;
         this.ball.move(this.platforms);
         const scoreDiff = this.ball.y - ballYOriginal;
-        if (scoreDiff > 0) {
+        // Losing a life at the top puts the ball back lower, which is no fall to score.
+        const lifeLost = this.gameStats.lives < livesBefore;
+        if (scoreDiff > 0 && !lifeLost) {
             this.gameStats.score += scoreDiff;
             this.gameStatsChanged(this.gameStats);
         }

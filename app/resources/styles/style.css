@@ -8,6 +8,11 @@ body {
     background-size: auto;
 }
 
+/* Without this, a rule that sets display (like .menu's flex) would keep a hidden element visible. */
+[hidden] {
+    display: none !important;
+}
+
 .left {
     float: left;
 }
@@ -23,12 +28,9 @@ body {
     width: 150px;
 }
 
-div.game-controls {
-    position: relative;
-}
-
 div.game-stats {
     color: white;
+    overflow: hidden;
 }
 
 div.title {
@@ -37,9 +39,38 @@ div.title {
 
 div.center {
     margin: auto;
-    width: 50%;
+    width: 300px;
+}
+
+div.board {
+    position: relative;
+    width: 300px;
+    height: 500px;
+}
+
+div.menu {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+div.game-over {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+div.game-over-title {
+    font-size: 2em;
+    font-weight: bold;
 }
 
 canvas {
+    display: block;
     background-color: rgba(0, 0, 0, 0.1);
 }

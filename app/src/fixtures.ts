@@ -91,11 +91,17 @@ export function givenGameMarkup(): string {
                     <span id="score" class="left">Score: <span id="score-counter">0</span></span>
                     <span id="lives" class="right"><span id="lives-counter"></span></span>
                 </div>
-                <canvas id="canvas" tabindex="0"></canvas>
-            </div>
-            <div class="game-controls" id="game-controls">
-                <button id="start" class="game-control">Start</button>
-                <button id="about" class="game-control">About</button>
+                <div class="board">
+                    <canvas id="canvas" tabindex="0"></canvas>
+                    <div id="menu" class="menu">
+                        <div id="game-over" class="game-over" hidden>
+                            <div class="game-over-title">Game Over</div>
+                            <div>Score: <span id="final-score">0</span></div>
+                        </div>
+                        <button id="start" class="game-control">Start</button>
+                        <button id="about" class="game-control">About</button>
+                    </div>
+                </div>
             </div>
         </div>`;
 }

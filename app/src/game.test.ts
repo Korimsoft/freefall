@@ -34,6 +34,9 @@ type GamePage = {
     ctx: FakeContext,
     canvas: HTMLCanvasElement,
     startButton: HTMLButtonElement,
+    menu: HTMLElement,
+    gameOverMessage: HTMLElement,
+    finalScore: () => string,
     lives: () => string,
     score: () => string,
     drawnBall: () => { x: number, y: number },
@@ -62,6 +65,9 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
         ctx,
         canvas,
         startButton: elementById('start', HTMLButtonElement),
+        menu: elementById('menu', HTMLElement),
+        gameOverMessage: elementById('game-over', HTMLElement),
+        finalScore: () => elementById('final-score', HTMLElement).textContent ?? '',
         lives: () => elementById('lives-counter', HTMLElement).innerHTML,
         score: () => elementById('score-counter', HTMLElement).innerHTML,
         drawnBall: () => {
@@ -81,7 +87,6 @@ function release(keyCode: number): void {
 
 beforeEach(() => {
     jest.useFakeTimers();
-    jest.spyOn(window, 'alert').mockImplementation(() => {});
     jest.spyOn(console, 'debug').mockImplementation(() => {});
 });
 
@@ -99,6 +104,13 @@ describe('game page before the start', () => {
         expect(canvas.getAttribute('height')).toBe('500px');
     });
 
+    it('shows the menu over the board, without the Game Over message', async () => {
+        const { menu, gameOverMessage } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+
+        expect(menu.hidden).toBe(false);
+        expect(gameOverMessage.hidden).toBe(true);
+    });
+
     it('draws nothing and runs no game', async () => {
         const { ctx, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
@@ -110,12 +122,12 @@ describe('game page before the start', () => {
 });
 
 describe('starting a game', () => {
-    it('disables Start, focuses the canvas and shows 3 lives and a score of 0', async () => {
-        const { startButton, canvas, lives, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+    it('hides the menu, focuses the canvas and shows 3 lives and a score of 0', async () => {
+        const { startButton, menu, canvas, lives, score } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
 
         startButton.click();
 
-        expect(startButton.disabled).toBe(true);
+        expect(menu.hidden).toBe(true);
         expect(document.activeElement).toBe(canvas);
         expect(lives()).toBe('3');
         expect(score()).toBe('0');
@@ -224,18 +236,32 @@ describe('game over', () => {
         return page;
     }
 
-    it('comes after the third life is lost, with a "You died" alert', async () => {
-        const { lives } = await givenAGameAfterThreeFalls();
+    it('comes after the third life is lost and shows the menu again with "Game Over" and the final score', async () => {
+        const { lives, score, menu, gameOverMessage, finalScore } = await givenAGameAfterThreeFalls();
 
         expect(lives()).toBe('0');
-        expect(window.alert).toHaveBeenCalledTimes(1);
-        expect(window.alert).toHaveBeenCalledWith('You died');
+        expect(menu.hidden).toBe(false);
+        expect(gameOverMessage.hidden).toBe(false);
+        expect(gameOverMessage.textContent).toContain('Game Over');
+        // three falls of 456 px each
+        expect(Number(finalScore())).toBeGreaterThan(1300);
+        expect(finalScore()).toBe(score());
     });
 
-    it('enables Start again', async () => {
-        const { startButton } = await givenAGameAfterThreeFalls();
+    it('shows the same final score as the counter when the last life is lost at the top', async () => {
+        // every platform tick makes a platform at x = 100, under the ball, so the
+        // ball is always carried up over the top
+        const platformsUnderTheBall = Array.from({ length: 200 }, () => [0, 0.5]).flat();
+        const { startButton, menu, score, finalScore } = await givenTheGamePage({
+            canvasLayout: CANVAS_300_BY_500,
+            randomNumbers: platformsUnderTheBall,
+        });
+        startButton.click();
 
-        expect(startButton.disabled).toBe(false);
+        jest.advanceTimersByTime(30000);
+
+        expect(menu.hidden).toBe(false);
+        expect(finalScore()).toBe(score());
     });
 
     it('stops the game and the drawing', async () => {
@@ -247,16 +273,15 @@ describe('game over', () => {
 
         expect(score()).toBe(scoreAtGameOver);
         expect(ctx.clearRect).toHaveBeenCalledTimes(framesAtGameOver);
-        expect(window.alert).toHaveBeenCalledTimes(1);
     });
 
-    it('lets a new game start with 3 lives', async () => {
-        const { startButton, lives } = await givenAGameAfterThreeFalls();
+    it('lets a new game start with 3 lives and hides the menu again', async () => {
+        const { startButton, menu, lives } = await givenAGameAfterThreeFalls();
 
         startButton.click();
 
         expect(lives()).toBe('3');
-        expect(startButton.disabled).toBe(true);
+        expect(menu.hidden).toBe(true);
     });
 });
 
@@ -335,5 +360,23 @@ describe('platforms in a running game', () => {
             PLATFORM_TICK_MS + TICKS_FOR_A_PLATFORM_TO_RISE_OVER_THE_TOP * GAME_TICK_MS - ONE_FALL_TO_THE_BOTTOM_MS,
         );
         expect(lives()).toBe('2');
+    });
+
+    it('scores nothing for putting the ball back at the top after it was carried over', async () => {
+        const { startButton, lives, score } = await givenTheGamePage({
+            canvasLayout: CANVAS_300_BY_500,
+            randomNumbers: ONE_PLATFORM_AT_X_100_UNDER_THE_BALL,
+        });
+        startButton.click();
+        // the ball rests on the platform and goes over the top a few ticks
+        // before the platform does, so step tick by tick to the tick that costs the life
+        let scoreBeforeTheTop = score();
+        for (let tick = 0; lives() === '3' && tick < 1000; tick++) {
+            scoreBeforeTheTop = score();
+            jest.advanceTimersByTime(GAME_TICK_MS);
+        }
+
+        expect(lives()).toBe('2');
+        expect(score()).toBe(scoreBeforeTheTop);
     });
 });
