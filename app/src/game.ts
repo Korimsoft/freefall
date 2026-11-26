@@ -120,10 +120,10 @@ class Application {
     }
 
     steer(direction: Steer, game: Game): void {
-        if (direction === 'none') {
+        if (direction === Steer.none) {
             game.ball.stopHorizontal();
         } else if (game.running) {
-            if (direction === 'left') {
+            if (direction === Steer.left) {
                 game.ball.goLeft();
             } else {
                 game.ball.goRight();
