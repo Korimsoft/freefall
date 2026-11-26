@@ -20,10 +20,6 @@ body {
     width: 150px;
 }
 
-div.title {
-    color: white;
-}
-
 /* board-fit.ts sets --board-scale: above 1 on a phone, where the board is drawn bigger to fill the screen. */
 div.center {
     margin: auto;
