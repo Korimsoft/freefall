@@ -1,3 +1,13 @@
+/* BOARD_SIZE in board-fit.ts must match --board-width and --board-height. */
+:root {
+    --board-width: 300px;
+    --board-height: 500px;
+    --menu-button-width: 150px;
+    --touch-button-size: 88px;
+    --touch-arrow-size: 44px;
+    --touch-controls-margin: 16px;
+}
+
 html {
     height: 100%;
 }
@@ -17,23 +27,23 @@ body {
     background: transparent;
     border: 1px solid white;
     color: white;
-    width: 150px;
+    width: var(--menu-button-width);
 }
 
 /* board-fit.ts sets --board-scale: above 1 on a phone, where the board is drawn bigger to fill the screen. */
 div.center {
     margin: auto;
-    width: calc(300px * var(--board-scale, 1));
+    width: calc(var(--board-width) * var(--board-scale, 1));
 }
 
 div.game {
-    height: calc(500px * var(--board-scale, 1));
+    height: calc(var(--board-height) * var(--board-scale, 1));
 }
 
 div.board {
     position: relative;
-    width: 300px;
-    height: 500px;
+    width: var(--board-width);
+    height: var(--board-height);
     transform: scale(var(--board-scale, 1));
     transform-origin: top left;
 }
@@ -104,8 +114,8 @@ div.game-over-title {
 
 /* The canvas's own width and height are its pixels, which board-fit.ts sets to the screen's; this is its size on the board. */
 canvas {
-    width: 300px;
-    height: 500px;
+    width: var(--board-width);
+    height: var(--board-height);
     display: block;
     background-color: rgba(0, 0, 0, 0.1);
 }
@@ -123,7 +133,10 @@ game-controls {
         left: 0;
         right: 0;
         bottom: 0;
-        padding: 0 max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+        padding: 0
+            max(var(--touch-controls-margin), env(safe-area-inset-right))
+            max(var(--touch-controls-margin), env(safe-area-inset-bottom))
+            max(var(--touch-controls-margin), env(safe-area-inset-left));
         /* The strip between the buttons lies over the page and must not take its touches. */
         pointer-events: none;
     }
@@ -131,8 +144,8 @@ game-controls {
 
 .touch-control {
     pointer-events: auto;
-    width: 72px;
-    height: 72px;
+    width: var(--touch-button-size);
+    height: var(--touch-button-size);
     border-radius: 50%;
     border: 2px solid white;
     background: rgba(255, 255, 255, 0.15);
@@ -148,8 +161,8 @@ game-controls {
 }
 
 .touch-control svg {
-    width: 36px;
-    height: 36px;
+    width: var(--touch-arrow-size);
+    height: var(--touch-arrow-size);
     fill: none;
     stroke: white;
     stroke-width: 1;
