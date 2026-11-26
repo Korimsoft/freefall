@@ -1,5 +1,5 @@
-import type { Platform } from './platform.ts';
-import type { Renderer } from './renderer.ts';
+import type { Platform } from './platform';
+import type { Renderer } from './renderer';
 
 export type Size = {
     width: number,

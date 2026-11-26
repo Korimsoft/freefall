@@ -1,4 +1,4 @@
-import { Hud, LIFE_BLINK_MS } from './hud.ts';
+import { Hud, LIFE_BLINK_MS } from './hud';
 
 type HudPage = {
     hud: Hud,

@@ -1,5 +1,5 @@
-import { Ball } from './ball.ts';
-import { PlatformGenerator } from './platform.ts';
+import { Ball } from './ball';
+import { PlatformGenerator } from './platform';
 
 export type Size = {
     width: number,

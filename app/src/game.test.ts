@@ -5,8 +5,8 @@ import {
     givenGameMarkup,
     givenRandomNumbers,
     Size,
-} from './fixtures.ts';
-import { LIFE_BLINK_MS } from './hud.ts';
+} from './fixtures';
+import { LIFE_BLINK_MS } from './hud';
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;
@@ -59,7 +59,7 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
     const ctx = givenAFakeContext();
     const canvas = givenACanvasDrawingInto(ctx, page.canvasLayout, elementById('canvas', HTMLCanvasElement));
     await jest.isolateModulesAsync(async () => {
-        await import('./game.ts');
+        await import('./game');
     });
 
     return {

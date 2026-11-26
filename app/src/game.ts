@@ -1,7 +1,7 @@
-import { Ball, Size } from './ball.ts';
-import { Renderer } from './renderer.ts';
-import { Platform, PlatformGenerator } from './platform.ts';
-import { Hud } from './hud.ts';
+import { Ball, Size } from './ball';
+import { Renderer } from './renderer';
+import { Platform, PlatformGenerator } from './platform';
+import { Hud } from './hud';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;

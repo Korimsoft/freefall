@@ -1,5 +1,5 @@
-import { PlatformGenerator } from './platform.ts';
-import { Renderer } from './renderer.ts';
+import { PlatformGenerator } from './platform';
+import { Renderer } from './renderer';
 import {
     givenABall,
     givenACanvasDrawingInto,
@@ -8,7 +8,7 @@ import {
     givenRandomNumbers,
     Platform,
     Size,
-} from './fixtures.ts';
+} from './fixtures';
 
 const BOARD_300_BY_500 = { width: 300, height: 500 };
 

@@ -6,8 +6,9 @@ A casual arcade game: static files in `app/`, served by a small Express server (
 
 - Package manager: pnpm (version in `packageManager` in package.json). Never use npm or yarn, and never commit a `package-lock.json`.
 - Install: `pnpm install`
-- Build: `pnpm build` (`scripts/build.js`) copies `app/` without its `.ts` files into `dist/` and compiles `app/src` with `tsconfig.build.json` into `dist/src`, leaving out the tests and `fixtures.ts`.
-- Sources import each other by their `.ts` file name (`./ball.ts`). `rewriteRelativeImportExtensions` in `tsconfig.json` makes the build emit `./ball.js`, the name the browser loads; ts-jest does the same, and Jest maps it back to the `.ts` file (`moduleNameMapper` in `jest.config.js`).
+- Build: `pnpm build` (`scripts/build.js`) copies `app/` without its `.ts` files into `dist/` and bundles `app/src/game.ts` and everything it imports with esbuild into one `dist/src/game.js`, the only script the page loads. The tests and `fixtures.ts` are not imported by the game, so they are not in the bundle. `tsc` only type checks.
+- Sources import each other without a file ending (`./ball`); esbuild and Jest find the `.ts` file. The browser only ever loads the bundle.
+- esbuild's install script stays off (`allowBuilds` in `pnpm-workspace.yaml`): it is not needed, because its binary comes as a platform package.
 - Run: `pnpm start` (builds, then serves `dist/`), then open http://localhost:8080
 - Test: `pnpm test` (Jest with ts-jest, jsdom); type check: `pnpm typecheck`.
 - Tests are TypeScript files next to the code they test in `app/src` (e.g. `ball.test.ts`), with shared test helpers in `app/src/fixtures.ts`. The build leaves them out of `dist/`.

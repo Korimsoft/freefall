@@ -6,8 +6,6 @@
     "lib": ["es2022", "dom"],
     "types": ["jest"],
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
     "noEmit": true
   },
   "include": ["app/src"]
