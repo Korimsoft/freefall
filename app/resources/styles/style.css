@@ -130,13 +130,21 @@ game-controls {
     border-radius: 50%;
     border: 2px solid white;
     background: rgba(255, 255, 255, 0.15);
-    color: white;
-    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     /* A held button must not zoom the page, select its arrow or open the iOS callout. */
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+}
+
+.touch-control svg {
+    width: 36px;
+    height: 36px;
+    fill: white;
 }
 
 .touch-control:active {

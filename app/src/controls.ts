@@ -21,9 +21,15 @@ class GameControlsElement extends HTMLElement {
         }
         this.rendered = true;
 
+        // SVG, not the ◀ ▶ characters: a character sits where its font's glyph box puts it, off centre.
+        // Each triangle's centroid is a little behind the middle, so it looks centred in the round button.
         this.innerHTML = `
-            <button class="touch-control left" aria-label="Left">◀</button>
-            <button class="touch-control right" aria-label="Right">▶</button>`;
+            <button class="touch-control left" aria-label="Left">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="16,5 5,12 16,19"/></svg>
+            </button>
+            <button class="touch-control right" aria-label="Right">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8,5 19,12 8,19"/></svg>
+            </button>`;
         this.listenTo(this.querySelector<HTMLButtonElement>('.left'), 'left');
         this.listenTo(this.querySelector<HTMLButtonElement>('.right'), 'right');
     }
