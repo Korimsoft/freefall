@@ -144,7 +144,11 @@ game-controls {
 .touch-control svg {
     width: 36px;
     height: 36px;
-    fill: white;
+    /* An outline with sharp corners, drawn like the platforms in renderer.ts. */
+    fill: none;
+    stroke: white;
+    stroke-width: 1;
+    stroke-linejoin: miter;
 }
 
 .touch-control:active {
