@@ -1,9 +1,10 @@
+import { within } from '@testing-library/dom';
 import { GameMenu, MENU_START_EVENT } from './menu';
 
 type MenuPage = {
     menu: GameMenu,
     buttons: () => string[],
-    startButton: () => HTMLButtonElement,
+    startButton: () => HTMLElement,
     gameOverMessage: () => HTMLElement,
     finalScore: () => string,
 };
@@ -14,8 +15,8 @@ function givenAMenu(): MenuPage {
     document.body.append(menu);
     return {
         menu,
-        buttons: () => Array.from(menu.querySelectorAll('button')).map(button => button.textContent ?? ''),
-        startButton: () => menu.querySelector('button.start') as HTMLButtonElement,
+        buttons: () => within(menu).getAllByRole('button').map(button => button.textContent ?? ''),
+        startButton: () => within(menu).getByRole('button', { name: 'Start' }),
         gameOverMessage: () => menu.querySelector('.game-over') as HTMLElement,
         finalScore: () => menu.querySelector('.final-score')?.textContent ?? '',
     };

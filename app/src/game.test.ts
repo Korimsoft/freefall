@@ -1,3 +1,4 @@
+import { within } from '@testing-library/dom';
 import {
     FakeContext,
     givenACanvasDrawingInto,
@@ -51,14 +52,6 @@ function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
     return element;
 }
 
-function inside<T extends HTMLElement>(component: string, selector: string, type: new () => T): T {
-    const element = document.querySelector(`${component} ${selector}`);
-    if (!(element instanceof type)) {
-        throw new Error(`The page has no ${type.name} "${selector}" in "${component}"`);
-    }
-    return element;
-}
-
 // game.js sets itself up on the page as soon as it is imported, so every test
 // imports a fresh copy into a fresh page.
 async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: number[] }): Promise<GamePage> {
@@ -70,15 +63,20 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
         await import('./game');
     });
 
+    const menu = elementById('menu', HTMLElement);
+    const hud = elementById('hud', HTMLElement);
+    // The Game Over message is hidden at first, and getByRole skips hidden elements.
+    const gameOverMessage = within(menu).getByText('Game Over').parentElement as HTMLElement;
+
     return {
         ctx,
         canvas,
-        startButton: inside('#menu', 'button.start', HTMLButtonElement),
-        menu: elementById('menu', HTMLElement),
-        gameOverMessage: inside('#menu', '.game-over', HTMLElement),
-        finalScore: () => inside('#menu', '.final-score', HTMLElement).textContent ?? '',
-        lives: () => String(document.querySelectorAll('#hud .lives .life:not(.life-lost)').length),
-        score: () => inside('#hud', '.score-counter', HTMLElement).innerHTML,
+        startButton: within(menu).getByRole('button', { name: 'Start' }),
+        menu,
+        gameOverMessage,
+        finalScore: () => within(gameOverMessage).getByText(/Score:/).textContent?.replace('Score: ', '') ?? '',
+        lives: () => String(hud.querySelectorAll('.life:not(.life-lost)').length),
+        score: () => within(hud).getByText(/Score:/).textContent?.replace('Score: ', '') ?? '',
         drawnBall: () => {
             const [x, y] = ctx.arc.mock.lastCall ?? [];
             return { x, y };
@@ -224,7 +222,7 @@ describe('a running game', () => {
 
     it('blinks the leftmost life ball when a life is lost and then takes it away', async () => {
         const { startButton } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
-        const lifeBalls = () => Array.from(document.querySelectorAll('#hud .lives .life'))
+        const lifeBalls = () => Array.from(document.querySelectorAll('#hud .life'))
             .map(ball => ball.classList.contains('life-lost') ? 'blinking' : 'ball');
         startButton.click();
         expect(lifeBalls()).toEqual(['ball', 'ball', 'ball']);
