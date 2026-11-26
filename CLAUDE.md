@@ -7,7 +7,7 @@ A casual arcade game: static files in `app/`, served by a small Express server (
 - Package manager: pnpm (version in `packageManager` in package.json). Never use npm or yarn, and never commit a `package-lock.json`.
 - Install: `pnpm install`
 - Build: `pnpm build` (`scripts/build.js`) copies `app/` without its `.ts` files into `dist/` and compiles `app/src` with `tsconfig.build.json` into `dist/src`, leaving out the tests and `fixtures.ts`.
-- Sources import each other with the `.js` name the browser loads (`./ball.js`); Jest maps it to the `.ts` file (`moduleNameMapper` in `jest.config.js`).
+- Sources import each other by their `.ts` file name (`./ball.ts`). `rewriteRelativeImportExtensions` in `tsconfig.json` makes the build emit `./ball.js`, the name the browser loads; ts-jest does the same, and Jest maps it back to the `.ts` file (`moduleNameMapper` in `jest.config.js`).
 - Run: `pnpm start` (builds, then serves `dist/`), then open http://localhost:8080
 - Test: `pnpm test` (Jest with ts-jest, jsdom); type check: `pnpm typecheck`.
 - Tests are TypeScript files next to the code they test in `app/src` (e.g. `ball.test.ts`), with shared test helpers in `app/src/fixtures.ts`. The build leaves them out of `dist/`.

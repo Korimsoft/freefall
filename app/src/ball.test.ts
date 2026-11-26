@@ -1,6 +1,6 @@
-import { Ball } from './ball.js';
-import { Renderer } from './renderer.js';
-import { givenABall, givenACanvasDrawingInto, givenAFakeContext, givenAPlatform, Platform } from './fixtures';
+import { Ball } from './ball.ts';
+import { Renderer } from './renderer.ts';
+import { givenABall, givenACanvasDrawingInto, givenAFakeContext, givenAPlatform, Platform } from './fixtures.ts';
 
 const BOARD_300_BY_500 = { width: 300, height: 500 };
 

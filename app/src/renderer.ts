@@ -1,5 +1,5 @@
-import type { Ball } from './ball.js';
-import type { Platform } from './platform.js';
+import type { Ball } from './ball.ts';
+import type { Platform } from './platform.ts';
 
 const BALL_FILL_LIGHT = 'rgba(255, 255, 255, 0.75)';
 const BALL_FILL = 'rgba(200, 200, 200, 0.5)';

@@ -4,7 +4,7 @@ export default {
     transform: {
         '^.+\\.ts$': 'ts-jest',
     },
-    // The sources import each other as './ball.js', the name the browser loads.
+    // ts-jest rewrites the sources' './ball.ts' imports to './ball.js', as the build does; Jest runs the .ts file.
     moduleNameMapper: {
         '^(\\.{1,2}/.*)\\.js$': '$1',
     },

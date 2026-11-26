@@ -1,5 +1,5 @@
-import { Renderer } from './renderer.js';
-import { givenABall, givenACanvasDrawingInto, givenAFakeContext, givenAPlatform } from './fixtures';
+import { Renderer } from './renderer.ts';
+import { givenABall, givenACanvasDrawingInto, givenAFakeContext, givenAPlatform } from './fixtures.ts';
 
 const BOARD_300_BY_500 = { width: 300, height: 500 };
 
