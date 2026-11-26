@@ -135,8 +135,8 @@ game-controls {
 
 .touch-control {
     pointer-events: auto;
-    width: 72px;
-    height: 72px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     border: 2px solid white;
     background: rgba(255, 255, 255, 0.15);
@@ -152,8 +152,8 @@ game-controls {
 }
 
 .touch-control svg {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     fill: none;
     stroke: white;
     stroke-width: 1;

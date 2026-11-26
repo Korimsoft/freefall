@@ -1,18 +1,18 @@
 import { BOARD_SIZE, boardScale, fitBoard, keepBoardFitted } from './board-fit';
 
 // A 390 × 844 phone held upright: the board starts 30 px down, under the title, and the
-// 72 px left button sits 16 px from the bottom left corner.
+// 88 px left button sits 16 px from the bottom left corner.
 const UPRIGHT_PHONE = {
     screen: { width: 390, height: 844 },
     boardTop: 30,
-    button: { right: 88, top: 756 },
+    button: { right: 104, top: 740 },
 };
 
 // The same phone turned sideways.
 const SIDEWAYS_PHONE = {
     screen: { width: 844, height: 390 },
     boardTop: 30,
-    button: { right: 88, top: 302 },
+    button: { right: 104, top: 286 },
 };
 
 type FitPage = {
@@ -38,7 +38,7 @@ function givenAPage(page: { screen: { width: number, height: number }, boardTop:
     jest.spyOn(board, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, page.boardTop, 300, 500));
     // jsdom lays nothing out, so every element measures 0 × 0, as hidden controls do in a browser.
     if (page.button) {
-        jest.spyOn(button, 'getBoundingClientRect').mockReturnValue(new DOMRect(page.button.right - 72, page.button.top, 72, 72));
+        jest.spyOn(button, 'getBoundingClientRect').mockReturnValue(new DOMRect(page.button.right - 88, page.button.top, 88, 88));
     }
 
     return {
@@ -53,7 +53,7 @@ function givenTheScreenTurned(controls: HTMLElement, turned: typeof SIDEWAYS_PHO
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: turned.screen.width });
     Object.defineProperty(window, 'innerHeight', { configurable: true, value: turned.screen.height });
     const button = controls.querySelector('.touch-control') as HTMLElement;
-    jest.spyOn(button, 'getBoundingClientRect').mockReturnValue(new DOMRect(turned.button.right - 72, turned.button.top, 72, 72));
+    jest.spyOn(button, 'getBoundingClientRect').mockReturnValue(new DOMRect(turned.button.right - 88, turned.button.top, 88, 88));
 }
 
 afterEach(() => {
@@ -72,18 +72,18 @@ describe('boardScale', () => {
     });
 
     it('keeps the board 16 px above the buttons when the phone is too short to fill its width', () => {
-        const shortPhone = { ...UPRIGHT_PHONE, screen: { width: 390, height: 640 }, button: { right: 88, top: 552 } };
+        const shortPhone = { ...UPRIGHT_PHONE, screen: { width: 390, height: 640 }, button: { right: 104, top: 536 } };
 
         const scale = boardScale(shortPhone);
 
-        expect(30 + BOARD_SIZE.height * scale).toBeCloseTo(552 - 16);
+        expect(30 + BOARD_SIZE.height * scale).toBeCloseTo(536 - 16);
     });
 
     it('fits the board between the buttons, 16 px above the bottom, on a phone turned sideways', () => {
         const scale = boardScale(SIDEWAYS_PHONE);
 
         expect(30 + BOARD_SIZE.height * scale).toBeCloseTo(390 - 16);
-        expect(BOARD_SIZE.width * scale).toBeLessThanOrEqual(844 - 2 * (88 + 16));
+        expect(BOARD_SIZE.width * scale).toBeLessThanOrEqual(844 - 2 * (104 + 16));
     });
 });
 
