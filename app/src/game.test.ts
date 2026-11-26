@@ -6,6 +6,7 @@ import {
     givenRandomNumbers,
     Size,
 } from './fixtures';
+import { LIFE_BLINK_MS } from './hud.js';
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;
@@ -68,7 +69,7 @@ async function givenTheGamePage(page: { canvasLayout: Size, randomNumbers: numbe
         menu: elementById('menu', HTMLElement),
         gameOverMessage: elementById('game-over', HTMLElement),
         finalScore: () => elementById('final-score', HTMLElement).textContent ?? '',
-        lives: () => elementById('lives-counter', HTMLElement).innerHTML,
+        lives: () => String(document.querySelectorAll('#lives .life:not(.life-lost)').length),
         score: () => elementById('score-counter', HTMLElement).innerHTML,
         drawnBall: () => {
             const [x, y] = ctx.arc.mock.lastCall ?? [];
@@ -211,6 +212,20 @@ describe('a running game', () => {
         expect(lives()).toBe('2');
         jest.advanceTimersToNextFrame();
         expect(drawnBall()).toEqual({ x: 150, y: 30 });
+    });
+
+    it('blinks the leftmost life ball when a life is lost and then takes it away', async () => {
+        const { startButton } = await givenTheGamePage({ canvasLayout: CANVAS_300_BY_500, randomNumbers: NO_PLATFORMS });
+        const lifeBalls = () => Array.from(document.querySelectorAll('#lives .life'))
+            .map(ball => ball.classList.contains('life-lost') ? 'blinking' : 'ball');
+        startButton.click();
+        expect(lifeBalls()).toEqual(['ball', 'ball', 'ball']);
+
+        jest.advanceTimersByTime(ONE_FALL_TO_THE_BOTTOM_MS);
+        expect(lifeBalls()).toEqual(['blinking', 'ball', 'ball']);
+
+        jest.advanceTimersByTime(LIFE_BLINK_MS);
+        expect(lifeBalls()).toEqual(['ball', 'ball']);
     });
 
     it('keeps the score while the ball is put back at the top', async () => {
