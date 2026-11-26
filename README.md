@@ -12,6 +12,10 @@ pnpm start
 
 While working on the game, run `pnpm dev` instead: it serves the game at http://localhost:5173 and updates the page every time you save a file.
 
+## Playing
+
+Steer the falling ball with the left and right arrow keys. On a phone or tablet (a device whose main pointer is a finger), two buttons in the bottom corners of the screen do the same while held. When both are held, lifting one sends the ball the way of the one still held.
+
 ## Testing
 
 ```

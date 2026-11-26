@@ -93,5 +93,6 @@ export function givenGameMarkup(): string {
                     <game-menu id="menu"></game-menu>
                 </div>
             </div>
-        </div>`;
+        </div>
+        <game-controls id="controls"></game-controls>`;
 }

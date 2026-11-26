@@ -3,6 +3,7 @@ import { Renderer } from './renderer';
 import { Platform, PlatformGenerator } from './platform';
 import { GameHud } from './hud';
 import { GameMenu, MENU_START_EVENT } from './menu';
+import { CONTROLS_STEER_EVENT, GameControls, Steer } from './controls';
 
 const KEY_LEFT = 37;
 const KEY_RIGHT = 39;
@@ -16,6 +17,7 @@ type View = {
     canvas: HTMLCanvasElement,
     hud: GameHud,
     menu: GameMenu,
+    controls: GameControls,
 };
 
 function elementById<T extends HTMLElement>(id: string, type: new () => T): T {
@@ -35,6 +37,7 @@ const initView = (): View => {
         canvas,
         hud: elementById('hud', GameHud),
         menu: elementById('menu', GameMenu),
+        controls: elementById('controls', GameControls),
     };
 };
 
@@ -44,6 +47,7 @@ class Application {
     boardDimensions: Size;
     platformGenerator: PlatformGenerator;
     renderer?: Renderer;
+    game?: Game;
     gameLoop?: number;
     platformGeneratorLoop?: number;
 
@@ -58,6 +62,11 @@ class Application {
         this.platformGenerator = new PlatformGenerator(this.boardDimensions);
 
         this.view.menu.addEventListener(MENU_START_EVENT, () => this.startClick());
+        this.view.controls.addEventListener(CONTROLS_STEER_EVENT, (event) => {
+            if (this.game) {
+                this.steer((event as CustomEvent<Steer>).detail, this.game);
+            }
+        });
     }
 
     startClick(): void {
@@ -76,6 +85,7 @@ class Application {
         game.gameStatsChanged = (gs) => this.updateGameStats(gs);
         game.gameStarted(() => this.gameOver(game.gameStats));
 
+        this.game = game;
         this.renderer = renderer;
         renderer.draw();
         this.gameLoop = window.setInterval(() => game.onGameLoopTick(), GAME_LOOP_PERIOD);
@@ -106,6 +116,18 @@ class Application {
 
     keyUp(game: Game): void {
         game.ball.stopHorizontal();
+    }
+
+    steer(direction: Steer, game: Game): void {
+        if (direction === 'none') {
+            game.ball.stopHorizontal();
+        } else if (game.running) {
+            if (direction === 'left') {
+                game.ball.goLeft();
+            } else {
+                game.ball.goRight();
+            }
+        }
     }
 }
 
